@@ -11,9 +11,9 @@ from JPEG.binutils import *
 from compressor.EntropyReduction import *
 
 
-def decompress_image(file_name):
+def decompress_image(file_name, id='i'):
 
-    def decompress(input, dimx=0, dimy=0, debug=False, c_layer=False):
+    def decompress(input, dimx=0, dimy=0, debug=False, c_layer=False, count=1):
         input = np.asarray(list(input))
         if c_layer:
             compressed_split = [input[i:i + 8] for i in range(0, len(input), 8)]
@@ -23,6 +23,7 @@ def decompress_image(file_name):
         pbar = tqdm(compressed_split)
         append = image_partitions.append
         if debug: print(compressed_split); print()
+        print("Running on layer", count, "/ 3:")
         if debug:
             for x in compressed_split:
                 idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), debug=True, c_layer=c_layer), debug=True)
@@ -70,9 +71,9 @@ def decompress_image(file_name):
                                               result_bytes[no_of_values:no_of_values+no_of_values_cr], \
                                               result_bytes[no_of_values+no_of_values_cr:]
 
-    newY, newCb, newCr = decompress(compressedY, dimx=s_length, dimy=s_width, debug=False), \
-                         decompress(compressedCb, dimx=s_length, dimy=s_width, debug=False, c_layer=True), \
-                         decompress(compressedCr, dimx=s_length, dimy=s_width, debug=False, c_layer=True)
+    newY, newCb, newCr = decompress(compressedY, dimx=s_length, dimy=s_width, debug=False, count=1), \
+                         decompress(compressedCb, dimx=s_length, dimy=s_width, debug=False, c_layer=True, count=2), \
+                         decompress(compressedCr, dimx=s_length, dimy=s_width, debug=False, c_layer=True, count=3)
 
     pbar = tqdm(range(1))
     for _ in pbar:
@@ -82,6 +83,9 @@ def decompress_image(file_name):
         rgbArray = rotate(rgbArray, 90)
 
     img = Image.fromarray(rgbArray)
+    # if id == 'i':
+    #
+    # else:
     img.save(image_save, "PNG", optimize=True)
 
 
@@ -106,6 +110,7 @@ if __name__ == '__main__':
                                               input("Name of decompressed image without extension: ")
         image_save = root_path + "compressed/testCases/" + decompressed_image + ".png"
         compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
+    # id = input("View picture immediately (i) / Save picture otherwise (s): ")
     print();
     decompress_image(compressed_file_name)
     print(); print("Decompression converged, your file is at: ", image_save)

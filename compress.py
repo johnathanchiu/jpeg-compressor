@@ -77,18 +77,25 @@ def compress_image(image, file_name):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = '/Users/johnathanchiu/Documents/CompressionPics/'  # enter file path of image
+    root_path = None  # enter file path of image
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-i", "--image", required=True,
     #                 help="image name")
     # ap.add_argument("-c", "--compressed", required=True,
     #                 help="compressed file name")
     # args = vars(ap.parse_args())
-    image_name, compressed_file = input("Image path: "), input("Compressed file name: ")
     # image_name, compressed_file = args["image"], args["compressed"]
     # compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
-    compressed_file_name = root_path + 'compressed/' + 'fileSizes/' + compressed_file
-    image = imageio.imread(root_path + "tests/" + image_name)
+    if root_path is None:
+        image_name, compressed_file = input("Image path (You can set a root directory in the code): "), \
+                                      input("Compressed file name (whatever you want to name the bz2 compressed file): ")
+        compressed_file_name = compressed_file
+        image = imageio.imread(image_name)
+    else:
+        image_name, compressed_file = input("Image path: "), \
+                                      input("Compressed file name (whatever you want to name the bz2 compressed file): ")
+        compressed_file_name = root_path + 'compressed/' + 'fileSizes/' + compressed_file
+        image = imageio.imread(root_path + "tests/" + image_name)
     # file_size, size, filename, mo_filesize = compress_image(image, compressed_file_name)
     file_size, size, filename = compress_image(image, compressed_file_name)
     print()
