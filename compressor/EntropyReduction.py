@@ -1,6 +1,7 @@
+import numpy as np
+
 import bz2
 
-import numpy as np
 import struct
 import sys
 import os

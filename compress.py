@@ -53,9 +53,6 @@ def compress_image(image, file_name):
     p_width = [convertInt(dimensions[16:24], bits=8),
                convertInt(dimensions[24:32], bits=8)]
 
-    # padding = convertBin(p_length - c_length, bits=8) + \
-    #           convertBin(p_length - c_width, bits=8)
-
     compressedY = compress(Y, debug=False)
     compressedCb = compress(Cb, debug=False, c_layer=True)
     compressedCr = compress(Cr, debug=False, c_layer=True)
@@ -92,11 +89,9 @@ if __name__ == '__main__':
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
         compressed_file_name = root_path + 'compressed/' + 'fileSizes/' + compressed_file
         image = imageio.imread(root_path + "tests/" + image_name)
-    # file_size, size, filename, mo_filesize = compress_image(image, compressed_file_name)
     file_size, size, filename = compress_image(image, compressed_file_name)
     print()
     print("file size after (entropy) compression: ", size)
-    # print("middle out reduced the file: ", mo_filesize - size * 8, "bits")
     print("file reduction percentage: ", (1 - ((file_size - size) / file_size)) * 100, "%")
     print("compression converges, new file name: ", filename)
     print("--- %s seconds ---" % (time.time() - start_time))

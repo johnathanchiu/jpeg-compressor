@@ -40,30 +40,19 @@ def decompress_image(file_name, id='i'):
         if debug: print("image: ", np.round(image + 128))
         return image + 128
 
-    # def decompress_bitset(bitset):
-    #     decompressed = MiddleOut.decompress(bitset, 1)
-    #     return convertInt_list(decompressed)
-
-    # compressed_bitset = readFile()
     pbar = tqdm(range(1))
     for _ in pbar:
         pbar.set_description("Reading bits from file using entropy decompressor")
         compressed_bitset = EntropyReduction.bz2_unc(file_name)
 
-    # p_length, p_width = convertInt(compressed_bitset[:16], bits=16), \
-    #                     convertInt(compressed_bitset[16:32], bits=16)
-
     p_length = convertInt(convertBin(compressed_bitset[0], bits=8) + convertBin(compressed_bitset[1], bits=8), bits=16)
     p_width = convertInt(convertBin(compressed_bitset[2], bits=8) + convertBin(compressed_bitset[3], bits=8), bits=16)
 
     s_length, s_width = int(p_length / 8), int(p_width / 8)
-    # length, width = p_length - convertInt(compressed_bitset[32:40], bits=8), \
-    #                 p_width - convertInt(compressed_bitset[40:48], bits=8)
 
     length, width = p_length - compressed_bitset[4], p_width - compressed_bitset[5]
 
     result_bytes = compressed_bitset[6:]
-    # result_bytes = decompress_bitset(compressed_bitset[48:])
 
     no_of_values, no_of_values_cr = int((p_length * p_width) / 4), int((p_length * p_width) / 8)
 
@@ -83,9 +72,6 @@ def decompress_image(file_name, id='i'):
         rgbArray = rotate(rgbArray, 90)
 
     img = Image.fromarray(rgbArray)
-    # if id == 'i':
-    #
-    # else:
     img.save(image_save, "PNG", optimize=True)
 
 
@@ -110,7 +96,6 @@ if __name__ == '__main__':
                                               input("Name of decompressed image without extension: ")
         image_save = root_path + "compressed/testCases/" + decompressed_image + ".png"
         compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
-    # id = input("View picture immediately (i) / Save picture otherwise (s): ")
     print();
     decompress_image(compressed_file_name)
     print(); print("Decompression converged, your file is at: ", image_save)
