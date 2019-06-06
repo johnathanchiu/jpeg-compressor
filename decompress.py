@@ -94,8 +94,8 @@ if __name__ == '__main__':
     else:
         compressed_file, decompressed_image = input("Compressed file path without extension: "), \
                                               input("Name of decompressed image without extension: ")
-        image_save = root_path + "compressed/testCases/" + decompressed_image + ".png"
-        compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
+        image_save = decompressed_image + ".png"
+        compressed_file_name = root_path + compressed_file
     print();
     decompress_image(compressed_file_name)
     print(); print("Decompression converged, your file is at: ", image_save)

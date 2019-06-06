@@ -87,8 +87,8 @@ if __name__ == '__main__':
     else:
         image_name, compressed_file = input("Image path: "), \
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
-        compressed_file_name = root_path + 'compressed/' + 'fileSizes/' + compressed_file
-        image = imageio.imread(root_path + "tests/" + image_name)
+        compressed_file_name = root_path + compressed_file
+        image = imageio.imread(root_path + image_name)
     file_size, size, filename = compress_image(image, compressed_file_name)
     print()
     print("file size after (entropy) compression: ", size)
