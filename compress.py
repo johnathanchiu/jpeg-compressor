@@ -43,10 +43,6 @@ def compress_image(image, file_name):
                 (YCBCR[:, :, 1])[:o_length, :o_width],\
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    # Y, Cb, Cr = (YCBCR[:, :, 0])[:1000, :1000], \
-    #             (YCBCR[:, :, 1])[:1000, :1000], \
-    #             (YCBCR[:, :, 2])[:1000, :1000]
-
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
     # print("padded image dimensions: ", p_length, p_width); print()
@@ -77,7 +73,7 @@ def compress_image(image, file_name):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = "/Users/johnathanchiu/Documents/CompressionPics/tests/"  # enter file path of image
+    root_path = "/users/johnathanchiu/Documents/CompressionPics/"  # enter file path of image
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-i", "--image", required=True,
     #                 help="image name")

@@ -20,10 +20,10 @@ def decompress_image(file_name, id='i'):
         else:
             compressed_split = [input[i:i + 16] for i in range(0, len(input), 16)]
         image_partitions = []
+        print("Running on layer", count, "/ 3:")
         pbar = tqdm(compressed_split)
         append = image_partitions.append
         if debug: print(compressed_split); print()
-        print("Running on layer", count, "/ 3:")
         if debug:
             for x in compressed_split:
                 idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), debug=True, c_layer=c_layer), debug=True)
@@ -92,7 +92,7 @@ def decompress_image(file_name, id='i'):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = "/Users/johnathanchiu/Documents/CompressionPics/compressed/fileSizes/"  # set root directory of project file
+    root_path = "/Users/johnathanchiu/Documents/CompressionPics/"  # set root directory of project file
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-c", "--compressed", required=True,
     #                 help="compressed file name")
