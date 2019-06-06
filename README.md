@@ -22,6 +22,10 @@ You can delete the PNG file and original after viewing, all image data is in the
 It is not recommended, there is no meta data in the bz2 file. Furthermore, this algorithm is theoretical, 1. there may
 be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image. Like I mentioned, this is a completely novel compression algorithm.
 
+# Future Works
+
+Currently, this program only accepts one quality value. Future plans are to enable the user to choose the quality of the photo. The algorithm will work using an SSIM metric that gives comparisons on a small partition of the image. Paper to how the entire algorithm works will be linked soon!
+
 # Dependencies:
  - imageio
  - tqdm
