@@ -92,7 +92,7 @@ def decompress_image(file_name, id='i'):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = None  # set root directory of project file
+    root_path = "/Users/johnathanchiu/Documents/CompressionPics/compressed/fileSizes/"  # set root directory of project file
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-c", "--compressed", required=True,
     #                 help="compressed file name")

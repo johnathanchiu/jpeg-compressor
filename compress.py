@@ -77,7 +77,7 @@ def compress_image(image, file_name):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = None  # enter file path of image
+    root_path = "/Users/johnathanchiu/Documents/CompressionPics/tests/"  # enter file path of image
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-i", "--image", required=True,
     #                 help="image name")
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     print()
     print("file size after (entropy) compression: ", size)
     # print("middle out reduced the file: ", mo_filesize - size * 8, "bits")
-    print("file reduction percentage: ", (1 - (size / file_size)) * 100, "%")
+    print("file reduction percentage: ", (1 - ((file_size - size) / file_size)) * 100, "%")
     print("compression converges, new file name: ", filename)
     print("--- %s seconds ---" % (time.time() - start_time))
 
