@@ -7,6 +7,10 @@ Use compress.py to compress photos. Put in entire file path when prompted.
 
 Use decompress.py to decompress photos. Save it as a PNG to view or view immediately.
 
+# Setup
+
+All file paths are currently under my own directories, you can change around the file paths to make experimenting with the compressor easier. For example changing the "root_path" variable to your own path you want to file to be saved to. These files are also configured under a special folder I put them in. Check main method to see how to fix.
+
 # Explanations
 
 All file data is saved within the bz2 file. I am working on developing a wrapper for the bz2 file so the image does
