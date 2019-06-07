@@ -52,7 +52,7 @@ def calc_matrix_eight_size(image_layer):
 def capture(image_patch, values=64, c_layer=False):
     image_patch = image_patch.flatten()
     if c_layer:
-        return np.round(image_patch[:int(values/2)].astype(int))
+        return np.round(image_patch[:int(values/2)+4].astype(int))
     return np.round(image_patch[:int(values)].astype(int))
 
 

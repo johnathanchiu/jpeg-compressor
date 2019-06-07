@@ -12,7 +12,7 @@ import array
 import time
 
 
-def compress_image(image, file_name, original_path):
+def compress_image(image, file_name):
 
     def compress(image, qual=64, debug=False, c_layer=False):
         image = image.copy().astype("float")
@@ -41,10 +41,7 @@ def compress_image(image, file_name, original_path):
         for i in pbar:
             compressed_data = array.array('b', [])
             partitions = []
-            if time == 0:
-                pbar.set_description("Running SSIM metric quality")
-            else:
-                pbar.set_description("Repeating SSIM metric quality with resampled weights")
+            pbar.set_description("Running SSIM metric quality, 1 through 64 sampled weights")
             list_of_patches = split(original_sample - 128, 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
@@ -77,8 +74,6 @@ def compress_image(image, file_name, original_path):
     values_to_keep = SSIM(Y, o_length, o_width)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
-    if values_to_keep <= 62:
-        values_to_keep += 2
 
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
@@ -129,7 +124,7 @@ if __name__ == '__main__':
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
         compressed_file_name = root_path + compressed_file
         image = imageio.imread(root_path + image_name)
-    size, filename = compress_image(image, compressed_file_name, image_name)
+    size, filename = compress_image(image, compressed_file_name)
     file_size = os.stat(image_name).st_size
     print()
     print("file size after (entropy) compression: ", size)
