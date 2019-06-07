@@ -13,12 +13,12 @@ from compressor.EntropyReduction import *
 
 def decompress_image(file_name, id='i'):
 
-    def decompress(input, dimx=0, dimy=0, debug=False, c_layer=False, count=1):
+    def decompress(input, dimx=0, dimy=0, qual=64, debug=False, c_layer=False, count=1):
         input = np.asarray(list(input))
         if c_layer:
-            compressed_split = [input[i:i + 8] for i in range(0, len(input), 8)]
+            compressed_split = [input[i:i + int(qual/2)] for i in range(0, len(input), int(qual/2))]
         else:
-            compressed_split = [input[i:i + 16] for i in range(0, len(input), 16)]
+            compressed_split = [input[i:i + qual] for i in range(0, len(input), qual)]
         image_partitions = []
         print("Running on layer", count, "/ 3:")
         pbar = tqdm(compressed_split)
@@ -45,24 +45,28 @@ def decompress_image(file_name, id='i'):
         pbar.set_description("Reading bits from file using entropy decompressor")
         compressed_bitset = EntropyReduction.bz2_unc(file_name)
 
-    p_length = convertInt(convertBin(compressed_bitset[0], bits=8) + convertBin(compressed_bitset[1], bits=8), bits=16)
-    p_width = convertInt(convertBin(compressed_bitset[2], bits=8) + convertBin(compressed_bitset[3], bits=8), bits=16)
+    quality_metric = compressed_bitset[0]
+    p_length = convertInt(convertBin(compressed_bitset[1], bits=8) + convertBin(compressed_bitset[2], bits=8), bits=16)
+    p_width = convertInt(convertBin(compressed_bitset[3], bits=8) + convertBin(compressed_bitset[4], bits=8), bits=16)
 
     s_length, s_width = int(p_length / 8), int(p_width / 8)
 
-    length, width = p_length - compressed_bitset[4], p_width - compressed_bitset[5]
+    length, width = p_length - compressed_bitset[5], p_width - compressed_bitset[6]
 
-    result_bytes = compressed_bitset[6:]
-
-    no_of_values, no_of_values_cr = int((p_length * p_width) / 4), int((p_length * p_width) / 8)
+    result_bytes = compressed_bitset[7:]
+    no_of_values, no_of_values_cr = int((p_length * p_width) / 64 * quality_metric), \
+                                    int((p_length * p_width) / 64 * int(quality_metric / 2))
 
     compressedY, compressedCb, compressedCr = result_bytes[:no_of_values], \
                                               result_bytes[no_of_values:no_of_values+no_of_values_cr], \
-                                              result_bytes[no_of_values+no_of_values_cr:]
+                                              result_bytes[no_of_values+no_of_values_cr:no_of_values+(2*no_of_values_cr)]
 
-    newY, newCb, newCr = decompress(compressedY, dimx=s_length, dimy=s_width, debug=False, count=1), \
-                         decompress(compressedCb, dimx=s_length, dimy=s_width, debug=False, c_layer=True, count=2), \
-                         decompress(compressedCr, dimx=s_length, dimy=s_width, debug=False, c_layer=True, count=3)
+    newY, newCb, newCr = decompress(compressedY, dimx=s_length, dimy=s_width, qual=quality_metric,
+                                    debug=False, count=1), \
+                         decompress(compressedCb, dimx=s_length, dimy=s_width, qual=quality_metric,
+                                    debug=False, c_layer=True, count=2), \
+                         decompress(compressedCr, dimx=s_length, dimy=s_width, qual=quality_metric,
+                                    debug=False, c_layer=True, count=3)
 
     pbar = tqdm(range(1))
     for _ in pbar:
