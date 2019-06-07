@@ -51,7 +51,7 @@ def compress_image(image, file_name, original_path):
                 partitions.append(samples)
             index = merge_blocks(partitions, int(256/8), int(256/8))
             metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min()) * 10
-            if metric / norm > 0.88:
+            if metric / norm > 0.95:
                 return i
         return 64
 
