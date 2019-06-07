@@ -32,15 +32,19 @@ def compress_image(image, file_name, original_path):
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
-    def SSIM(photo, photo_x, photo_y, norm=.1):
+    def SSIM(photo, photo_x, photo_y):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
         grab_x, grab_y = int(photo_x / 2), int(photo_y / 2)
-        original_sample = np.array(photo[grab_x:grab_x + 256, grab_y:grab_y + 256])
+        original_sample = np.array(photo[grab_x:grab_x + 176, grab_y:grab_y + 176], dtype=np.int16)
         pbar = tqdm(range(1, 64))
+        previous_metric = 0
         for i in pbar:
             compressed_data = array.array('b', [])
             partitions = []
-            pbar.set_description("Running SSIM metric quality")
+            if time == 0:
+                pbar.set_description("Running SSIM metric quality")
+            else:
+                pbar.set_description("Repeating SSIM metric quality with resampled weights")
             list_of_patches = split(original_sample - 128, 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
@@ -49,10 +53,14 @@ def compress_image(image, file_name, original_path):
             for y in compressed_split:
                 samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)))) + 128
                 partitions.append(samples)
-            index = merge_blocks(partitions, int(256/8), int(256/8))
-            metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min()) * 7.5
-            if metric / norm > 0.92:
-                return i
+            index = merge_blocks(partitions, int(176/8), int(176/8))
+            metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min())
+            if i == 1:
+                previous_metric = metric
+            else:
+                if metric > 0.98 or abs(previous_metric - metric) < 0.00001:
+                    return i
+                previous_metric = metric
         return 64
 
     o_length, o_width = image[:, :, 0].shape
@@ -66,8 +74,7 @@ def compress_image(image, file_name, original_path):
                 (YCBCR[:, :, 1])[:o_length, :o_width],\
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    normalization = os.stat(original_path).st_size / 1000000
-    values_to_keep = SSIM(Y, o_length, o_width, norm=normalization)
+    values_to_keep = SSIM(Y, o_length, o_width)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
 

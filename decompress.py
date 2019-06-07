@@ -19,8 +19,8 @@ def decompress_image(file_name, id='i'):
             compressed_split = [input[i:i + int(qual/2)] for i in range(0, len(input), int(qual/2))]
         else:
             compressed_split = [input[i:i + qual] for i in range(0, len(input), qual)]
-        image_partitions = []
         print("Running on layer", count, "/ 3:")
+        image_partitions = []
         pbar = tqdm(compressed_split)
         append = image_partitions.append
         if debug: print(compressed_split); print()
@@ -75,8 +75,12 @@ def decompress_image(file_name, id='i'):
                                 newCr[0:length, 0:width]]).T), axis=1)
         rgbArray = rotate(rgbArray, 90)
 
-    img = Image.fromarray(rgbArray)
-    img.save(image_save, "PNG", optimize=True)
+    if id == 'Y' or id == 'y':
+        img = Image.fromarray(rgbArray)
+        img.save(image_save, "JPEG", optimize=True)
+    else:
+        img = Image.fromarray(rgbArray)
+        img.save(image_save, "PNG", optimize=True)
 
 
 if __name__ == '__main__':
@@ -100,7 +104,10 @@ if __name__ == '__main__':
                                               input("Name of decompressed image without extension: ")
         image_save = decompressed_image + ".png"
         compressed_file_name = root_path + compressed_file
+    iden = input("Save image as a compressed jpeg? [potential lower quality jpeg] (Y/N): ")
+    if iden == 'Y' or iden == 'y':
+        image_save = decompressed_image + ".jpg"
     print();
-    decompress_image(compressed_file_name)
+    decompress_image(compressed_file_name, id=iden)
     print(); print("Decompression converged, your file is at: ", image_save)
     print("--- %s seconds ---" % (time.time() - start_time))
