@@ -9,7 +9,10 @@ Use decompress.py to decompress photos. Save it as a PNG to view or view immedia
 
 # Setup
 
-All file paths are currently under my own directories, you can change around the file paths to make experimenting with the compressor easier. For example changing the "root_path" variable to your own path you want to file to be saved to. These files are also configured under a special folder I put them in. Check main method to see how to fix.
+All file paths are currently under my own directories, you can change around the file paths to make experimenting with
+the compressor easier. For example changing the "root_path" variable to your own path you want to file to be saved to.
+These files are also configured under a special folder I put them in. Check main method to see how to fix.
+For compress.py change line 73, your "root_path". For decompress.py change line 81, your "root_path".
 
 # Explanations
 

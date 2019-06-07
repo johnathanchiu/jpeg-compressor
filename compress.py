@@ -70,7 +70,7 @@ def compress_image(image, file_name):
 if __name__ == '__main__':
     start_time = time.time()
     # print(start_time); print()
-    root_path = "/users/johnathanchiu/Documents/CompressionPics/"  # enter file path of image
+    root_path = None  # enter file path of image
     # ap = argparse.ArgumentParser()
     # ap.add_argument("-i", "--image", required=True,
     #                 help="image name")
