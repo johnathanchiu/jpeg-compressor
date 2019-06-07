@@ -1,7 +1,6 @@
 from compressor.EntropyReduction import *
 from JPEG.utils import *
 from JPEG.binutils import *
-from JPEG.ssim import *
 
 from skimage.measure._structural_similarity import compare_ssim as ssim
 
@@ -67,7 +66,7 @@ def compress_image(image, file_name, original_path):
                 (YCBCR[:, :, 1])[:o_length, :o_width],\
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    normalization = os.stat(image_name).st_size / 1000000
+    normalization = os.stat(original_path).st_size / 1000000
     values_to_keep = SSIM(Y, o_length, o_width, norm=normalization)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
