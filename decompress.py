@@ -16,7 +16,7 @@ def decompress_image(file_name, id='i'):
     def decompress(input, dimx=0, dimy=0, qual=64, debug=False, c_layer=False, count=1):
         input = np.asarray(list(input))
         if c_layer:
-            compressed_split = [input[i:i+int(qual/2)+4] for i in range(0, len(input), int(qual/2)+4)]
+            compressed_split = [input[i:i+int(qual * 3 / 4)] for i in range(0, len(input), int(qual * 3 / 4))]
         else:
             compressed_split = [input[i:i+qual] for i in range(0, len(input), qual)]
         print("Running on layer", count, "/ 3:")
@@ -55,7 +55,7 @@ def decompress_image(file_name, id='i'):
 
     result_bytes = compressed_bitset[7:]
     no_of_values, no_of_values_cr = int((p_length * p_width) / 64 * quality_metric), \
-                                    int((p_length * p_width) / 64 * (int(quality_metric / 2) + 4))
+                                    int((p_length * p_width) / 64 * (int(quality_metric * 3 / 4)))
 
     compressedY, compressedCb, compressedCr = result_bytes[:no_of_values], \
                                               result_bytes[no_of_values:no_of_values+no_of_values_cr], \

@@ -1,6 +1,16 @@
+# project inherent files
 *.iml
 *.xml
 *.pyc
+
+# remove compressed files
 *.bz2
 *.bin
+
+# remove images
+*.jpeg
+*.jpg
+*.png
+
+# original writer's file used for module testing
 smalltester.py
