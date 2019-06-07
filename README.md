@@ -7,6 +7,11 @@ Use compress.py to compress photos. Put in entire file path when prompted.
 
 Use decompress.py to decompress photos. Save it as a PNG to view or view immediately.
 
+# Recent Additions
+
+You can now save the image as a compressed JPEG. The JPEG won't be as small as a bz2 file but will be smaller
+than the original JPEG. This compressor should also outperform Google's Guetzli.
+
 # Setup
 
 All file paths are currently under my own directories, you can change around the file paths to make experimenting with
