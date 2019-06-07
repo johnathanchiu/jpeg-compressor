@@ -17,22 +17,29 @@ For compress.py change line 73, your "root_path". For decompress.py change line 
 # Explanations
 
 All file data is saved within the bz2 file. I am working on developing a wrapper for the bz2 file so the image does
-not have to be saved into a PNG. The PNG file that is saved when decompressed is for viewing purposes.
+not have to be saved into a PNG. The PNG file that is saved when decompressed is for viewing purposes (emphasized).
 You can delete the PNG file and original after viewing, all image data is in the bz2 file.
+When comparing file sizes, compare the bz2 file to the original image (JPEG file).
 
 # Deleting the original image is not recommended
 
-It is not recommended, there is no meta data in the bz2 file. Furthermore, this algorithm is theoretical, 1. there may
-be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image. Like I mentioned, this is a completely novel compression algorithm.
+Though it is mentioned above, it is not recommended. There is no meta data in the bz2 file.
+Furthermore, this algorithm is theoretical, 1. there may
+be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image.
+Like I mentioned, this is a completely novel compression algorithm.
 
 # Future Works
 
-Currently, this program only accepts one quality value. Future plans are to enable the user to choose the quality of the photo. The algorithm will work using an SSIM metric that gives comparisons on a small partition of the image. Paper to how the entire algorithm works will be linked soon!
+Currently, this program only accepts one quality value. Future plans are to enable the user to choose the quality of the photo.
+The algorithm will work using an SSIM metric that gives comparisons on a small partition of the image (Update: This part has been updated,
+the algorithm only accepts one quality but it chooses the best possible quality in relative to the best compression ratios).
+Novel lossless entropy encoder which outperforms bz2 and gzip to be added as replacement of bz2 also coming soon.
+Paper to how the entire algorithm works will be linked soon!
 
-# Dependencies:
- - imageio
- - tqdm
- - scipy
- - numpy
- - time
- - scikit-image
+# Dependencies & Purposes:
+ - imageio (for opening image files and saving)
+ - tqdm (make UI layout nicer with progess bars)
+ - scipy (running JPEG's DCT {2d})
+ - numpy (makes matrix mathematics easier)
+ - time (timer for length of algorithm)
+ - scikit-image (SSIM metric quality)
