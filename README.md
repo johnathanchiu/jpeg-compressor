@@ -35,3 +35,4 @@ Currently, this program only accepts one quality value. Future plans are to enab
  - scipy
  - numpy
  - time
+ - scikit-image
