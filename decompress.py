@@ -48,9 +48,7 @@ def decompress_image(file_name, id='i'):
     quality_metric = compressed_bitset[0]
     p_length = convertInt(convertBin(compressed_bitset[1], bits=8) + convertBin(compressed_bitset[2], bits=8), bits=16)
     p_width = convertInt(convertBin(compressed_bitset[3], bits=8) + convertBin(compressed_bitset[4], bits=8), bits=16)
-
     s_length, s_width = int(p_length / 8), int(p_width / 8)
-
     length, width = p_length - compressed_bitset[5], p_width - compressed_bitset[6]
 
     result_bytes = compressed_bitset[7:]

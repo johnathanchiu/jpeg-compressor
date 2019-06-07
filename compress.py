@@ -67,8 +67,7 @@ def compress_image(image, file_name):
         pbar.set_description("Converting image sample space RGB -> YCbCr")
         YCBCR = rgb2ycbcr(image)
 
-    Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width],\
-                (YCBCR[:, :, 1])[:o_length, :o_width],\
+    Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], \
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
     values_to_keep = SSIM(Y, o_length, o_width)
@@ -84,10 +83,8 @@ def compress_image(image, file_name):
     # print("padded image dimensions: ", p_length, p_width); print()
     dimensions = convertBin(p_length, bits=16) + convertBin(p_width, bits=16)
     padding = [p_length - c_length, p_width - c_width]
-    p_length = [convertInt(dimensions[:8], bits=8),
-                convertInt(dimensions[8:16], bits=8)]
-    p_width = [convertInt(dimensions[16:24], bits=8),
-               convertInt(dimensions[24:32], bits=8)]
+    p_length = [convertInt(dimensions[:8], bits=8), convertInt(dimensions[8:16], bits=8)]
+    p_width = [convertInt(dimensions[16:24], bits=8), convertInt(dimensions[24:32], bits=8)]
     keep = [values_to_keep]
 
     compressedY = compress(Y, qual=values_to_keep, debug=False)
