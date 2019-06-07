@@ -50,8 +50,8 @@ def compress_image(image, file_name, original_path):
                 samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)))) + 128
                 partitions.append(samples)
             index = merge_blocks(partitions, int(256/8), int(256/8))
-            metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min()) * 10
-            if metric / norm > 0.95:
+            metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min()) * 7
+            if metric / norm > 0.96:
                 return i
         return 64
 
