@@ -14,8 +14,8 @@ def decompress_image(file_name, id='i'):
 
     def decompress(input, dimx=0, dimy=0, qual=64, c_layer=False, count=1, debug=False):
         if c_layer:
-            compressed_split = np.array([np.array(input[i:i+int(qual * 8 / 10)], dtype=np.int8)
-                                         for i in range(0, len(input), int(qual * 8 / 10))], dtype=np.int8)
+            compressed_split = np.array([np.array(input[i:i+int(qual * 3 / 4)], dtype=np.int8)
+                                         for i in range(0, len(input), int(qual * 3 / 4))], dtype=np.int8)
         else:
             compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
                                          for i in range(0, len(input), qual)], dtype=np.int8)
@@ -53,7 +53,7 @@ def decompress_image(file_name, id='i'):
 
     result_bytes = compressed_bitset[7:]
     no_of_values, no_of_values_cr = int((p_length * p_width) / 64 * quality_metric), \
-                                    int((p_length * p_width) / 64 * (int(quality_metric * 8 / 10)))
+                                    int((p_length * p_width) / 64 * (int(quality_metric * 3 / 4)))
 
     compressedY = result_bytes[:no_of_values]
     compressedCb = result_bytes[no_of_values:no_of_values+no_of_values_cr]

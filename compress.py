@@ -16,11 +16,11 @@ import time
 def compress_image(image, file_name):
 
     def compress(image, qual=64, count=1, debug=False, c_layer=False):
-        image_copy = image.copy().astype(np.uint8)
+        image_copy = image.copy().astype(np.int16)
         compressed_data = array.array('b', [])
         ext = compressed_data.extend
         if debug: print(image); print()
-        list_of_patches = split(matrix_multiple_of_eight(image_copy) - 128, 8, 8).astype(np.int8)
+        list_of_patches = split((matrix_multiple_of_eight(image_copy) - 128).astype(np.int8), 8, 8)
         pbar = tqdm(list_of_patches)
         if debug:
             for x in list_of_patches:
@@ -38,12 +38,12 @@ def compress_image(image, file_name):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
         grab_x, grab_y = int(photo_x / 2), int(photo_y / 2)
         original_sample = np.array(photo[grab_x:grab_x + 176, grab_y:grab_y + 176], dtype=np.int16)
-        pbar = tqdm(range(18, 64))
+        pbar = tqdm(range(14, 64))
         previous_metric = 0
         for i in pbar:
             compressed_data = array.array('b', [])
             partitions = []
-            pbar.set_description("Running SSIM metric quality, 18 through 64 sampled weights")
+            pbar.set_description("Running SSIM metric quality, 14 through 64 sampled weights")
             list_of_patches = split(original_sample - 128, 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
@@ -57,7 +57,7 @@ def compress_image(image, file_name):
             if i == 1:
                 previous_metric = metric
             else:
-                if metric > 0.98 or abs(previous_metric - metric) < 0.000001:
+                if metric > 0.97 or abs(previous_metric - metric) < 0.00001:
                     return i
                 previous_metric = metric
         return 64

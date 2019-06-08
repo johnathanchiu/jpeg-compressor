@@ -5,8 +5,8 @@ import numpy as np
 
 def split(array, nrows, ncols):
     """Split a matrix into sub-matrices."""
-    return np.array([np.array(array[x:x + nrows, y:y + ncols], dtype=np.int16) for x in range(0, array.shape[0], nrows)
-                     for y in range(0, array.shape[1], ncols)], dtype=np.int16)
+    return np.array([array[x:x + nrows, y:y + ncols] for x in range(0, array.shape[0], nrows)
+            for y in range(0, array.shape[1], ncols)], dtype=np.int8)
 
 
 # converts rgb to ycbcr colorspace
@@ -52,8 +52,8 @@ def calc_matrix_eight_size(image_layer):
 def capture(image_patch, values=64, c_layer=False):
     image_patch = image_patch.flatten()
     if c_layer:
-        return image_patch[:int(values * 8 / 10)].astype(int)
-    return image_patch[:int(values)].astype(int)
+        return image_patch[:int(values * 3 / 4)]
+    return image_patch[:int(values)]
 
 
 def rebuild(image):
@@ -77,7 +77,7 @@ def zig_zag(input_matrix, block_size=8, debug=False):
                 z[index] = input_matrix[i - j, j]
     z = z.reshape((8, 8), order='C')
     if debug: print("zig zag: ", np.round(z)); print()
-    return np.round(z)
+    return z
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):
@@ -143,8 +143,8 @@ def quantize(input, debug=False, c_layer=False):
                     [43, 55, 57, 59, 67, 60, 62, 59]])
     if debug: print("quantize: ", input/q); print()
     if c_layer:
-        return (input / q_c).astype(np.int8)
-    return (input / q).astype(np.int8)
+        return np.round(input / q_c).astype(np.int8)
+    return np.round(input / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
@@ -167,7 +167,7 @@ def undo_quantize(input, debug=False, c_layer=False):
                     [43, 55, 57, 59, 67, 60, 62, 59]])
     if debug: print("undo quantize: ", input*q); print()
     if c_layer:
-        return input.astype(np.int16) * q_c
-    return input.astype(np.int16) * q
+        return input.astype(float) * q_c
+    return input.astype(float) * q
 
 
