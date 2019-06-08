@@ -72,11 +72,9 @@ def compress_image(image, file_name):
     Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], \
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    # values_to_keep = SSIM(Y, o_length, o_width)
-    # if values_to_keep % 2 != 0:
-    #     values_to_keep += 1
-
-    values_to_keep = 64
+    values_to_keep = SSIM(Y, o_length, o_width)
+    if values_to_keep % 2 != 0:
+        values_to_keep += 1
 
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
