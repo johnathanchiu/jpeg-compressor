@@ -16,7 +16,7 @@ import time
 def compress_image(image, file_name):
 
     def compress(image, qual=64, count=1, debug=False, c_layer=False):
-        image_copy = image.copy().astype(np.int16)
+        image_copy = image.copy().astype(float)
         compressed_data = array.array('b', [])
         ext = compressed_data.extend
         if debug: print(image); print()
@@ -72,14 +72,14 @@ def compress_image(image, file_name):
     Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], \
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    values_to_keep = SSIM(Y, o_length, o_width)
-    if values_to_keep % 2 != 0:
-        values_to_keep += 1
-
-    print("Number of samples (out of 64) to keep: ", values_to_keep)
-
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
+
+    values_to_keep = SSIM(Y, p_length, p_width)
+    if values_to_keep % 2 != 0:
+        values_to_keep += 1
+    print("Number of samples (out of 64) to keep: ", values_to_keep)
+
     # print("padded image dimensions: ", p_length, p_width); print()
     dimensions = convertBin(p_length, bits=16) + convertBin(p_width, bits=16)
     padding = [p_length - c_length, p_width - c_width]
@@ -91,6 +91,7 @@ def compress_image(image, file_name):
     compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=False, c_layer=True)
     compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=False, c_layer=True)
 
+    print(len(compressedY), len(compressedCb), len(compressedCr))
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
     compressed = dim + compressedY + compressedCb + compressedCr
     pbar = tqdm(range(1))
