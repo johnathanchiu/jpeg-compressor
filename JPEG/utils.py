@@ -77,7 +77,7 @@ def zig_zag(input_matrix, block_size=8, debug=False):
                 z[index] = input_matrix[i - j, j]
     z = z.reshape((8, 8), order='C')
     if debug: print("zig zag: ", np.round(z)); print()
-    return z
+    return np.round(z)
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):

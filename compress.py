@@ -75,8 +75,8 @@ def compress_image(image, file_name):
     values_to_keep = SSIM(Y, o_length, o_width)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
-    if values_to_keep <= 60:
-        values_to_keep += 4
+    if values_to_keep <= 62:
+        values_to_keep += 2
 
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
