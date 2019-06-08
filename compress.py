@@ -57,7 +57,7 @@ def compress_image(image, file_name):
             if i == 1:
                 previous_metric = metric
             else:
-                if metric > 0.97 or abs(previous_metric - metric) < 0.00001:
+                if metric > 0.99 or abs(previous_metric - metric) < 0.00001:
                     return i
                 previous_metric = metric
         return 64

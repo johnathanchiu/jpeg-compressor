@@ -72,7 +72,7 @@ def decompress_image(file_name, id='i'):
 
     if id == 'Y' or id == 'y':
         img = Image.fromarray(rgbArray)
-        img.save(image_save, "JPEG", optimize=True)
+        img.save(image_save, "JPEG", optimize=True, quality=100)
     else:
         img = Image.fromarray(rgbArray)
         img.save(image_save, "PNG", optimize=True)

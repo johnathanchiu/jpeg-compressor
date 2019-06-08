@@ -52,8 +52,8 @@ def calc_matrix_eight_size(image_layer):
 def capture(image_patch, values=64, c_layer=False):
     image_patch = image_patch.flatten()
     if c_layer:
-        return image_patch[:int(values * 3 / 4)]
-    return image_patch[:int(values)]
+        return image_patch[:int(values * 3 / 4)].astype(int)
+    return image_patch[:int(values)].astype(int)
 
 
 def rebuild(image):
@@ -143,8 +143,8 @@ def quantize(input, debug=False, c_layer=False):
                     [43, 55, 57, 59, 67, 60, 62, 59]])
     if debug: print("quantize: ", input/q); print()
     if c_layer:
-        return np.round(input / q_c).astype(np.int8)
-    return np.round(input / q).astype(np.int8)
+        return np.round(input.astype(np.float16) / q_c).astype(np.int8)
+    return np.round(input.astype(np.float16) / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
