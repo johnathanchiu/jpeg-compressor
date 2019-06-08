@@ -52,7 +52,7 @@ def calc_matrix_eight_size(image_layer):
 def capture(image_patch, values=64, c_layer=False):
     image_patch = image_patch.flatten()
     if c_layer:
-        return image_patch[:int(values * 3 / 4)].astype(int)
+        return image_patch[:int(values * 8 / 10)].astype(int)
     return image_patch[:int(values)].astype(int)
 
 
@@ -77,7 +77,7 @@ def zig_zag(input_matrix, block_size=8, debug=False):
                 z[index] = input_matrix[i - j, j]
     z = z.reshape((8, 8), order='C')
     if debug: print("zig zag: ", np.round(z)); print()
-    return z
+    return np.round(z)
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):
@@ -96,7 +96,7 @@ def zig_zag_reverse(input_matrix, block_size=8, debug=False):
             else:
                 output_matrix[i - j, j] = input_matrix[index]
     if debug: print("zig zag reverse: ", output_matrix); print()
-    return output_matrix
+    return output_matrix.astype(np.int8)
 
 
 def dct_2d(image, debug=False):
@@ -110,7 +110,7 @@ def idct_2d(image, debug=False):
     if debug: print(image); print()
     image.astype(float)
     if debug: print("idct: ", fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')); print()
-    return fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')
+    return np.round(fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')).astype(np.int16)
 
 
 def merge_blocks(input_list, rows, columns):
@@ -133,18 +133,18 @@ def quantize(input, debug=False, c_layer=False):
                    [24, 35, 55, 64, 81, 104, 113, 92],
                    [49, 64, 78, 87, 103, 121, 120, 101],
                    [72, 92, 95, 98, 112, 100, 103, 99]])
-    q_c = np.array([[8, 4, 3, 5, 9, 12, 31, 37],
-                    [3, 2, 8, 3, 16, 35, 36, 33],
-                    [4, 4, 1, 2, 24, 34, 41, 34],
-                    [2, 1, 5, 17, 31, 52, 48, 37],
-                    [6, 13, 22, 34, 41, 65, 62, 46],
-                    [14, 21, 33, 38, 49, 62, 68, 55],
-                    [29, 38, 47, 52, 62, 73, 72, 61],
-                    [43, 55, 57, 59, 67, 60, 62, 59]])
+    q_c = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
+                    [12, 12, 14, 19, 26, 58, 60, 55],
+                    [14, 13, 16, 24, 40, 57, 69, 56],
+                    [14, 17, 22, 29, 51, 87, 80, 62],
+                    [18, 22, 37, 56, 68, 109, 103, 77],
+                    [24, 35, 55, 64, 81, 104, 113, 92],
+                    [49, 64, 78, 87, 103, 121, 120, 101],
+                    [72, 92, 95, 98, 112, 100, 103, 99]])
     if debug: print("quantize: ", input/q); print()
     if c_layer:
-        return np.round(input.astype(np.float16) / q_c).astype(np.int8)
-    return np.round(input.astype(np.float16) / q).astype(np.int8)
+        return input.astype(np.float16) / q_c
+    return input.astype(np.float16) / q
 
 
 def undo_quantize(input, debug=False, c_layer=False):
@@ -157,17 +157,17 @@ def undo_quantize(input, debug=False, c_layer=False):
                   [24, 35, 55, 64, 81, 104, 113, 92],
                   [49, 64, 78, 87, 103, 121, 120, 101],
                   [72, 92, 95, 98, 112, 100, 103, 99]])
-    q_c = np.array([[8, 4, 3, 5, 9, 12, 31, 37],
-                    [3, 2, 8, 3, 16, 35, 36, 33],
-                    [4, 4, 1, 2, 24, 34, 41, 34],
-                    [2, 1, 5, 17, 31, 52, 48, 37],
-                    [6, 13, 22, 34, 41, 65, 62, 46],
-                    [14, 21, 33, 38, 49, 62, 68, 55],
-                    [29, 38, 47, 52, 62, 73, 72, 61],
-                    [43, 55, 57, 59, 67, 60, 62, 59]])
+    q_c = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
+                    [12, 12, 14, 19, 26, 58, 60, 55],
+                    [14, 13, 16, 24, 40, 57, 69, 56],
+                    [14, 17, 22, 29, 51, 87, 80, 62],
+                    [18, 22, 37, 56, 68, 109, 103, 77],
+                    [24, 35, 55, 64, 81, 104, 113, 92],
+                    [49, 64, 78, 87, 103, 121, 120, 101],
+                    [72, 92, 95, 98, 112, 100, 103, 99]])
     if debug: print("undo quantize: ", input*q); print()
     if c_layer:
-        return input.astype(float) * q_c
-    return input.astype(float) * q
+        return input * q_c
+    return input * q
 
 

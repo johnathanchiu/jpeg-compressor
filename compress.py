@@ -24,7 +24,7 @@ def compress_image(image, file_name):
         pbar = tqdm(list_of_patches)
         if debug:
             for x in list_of_patches:
-                ext(capture(zig_zag(quantize(dct_2d(x, True), debug=True, c_layer=c_layer), debug=True), values=qual,
+                ext(capture(zig_zag(quantize(dct_2d(x, debug=True), debug=True, c_layer=c_layer), debug=True), values=qual,
                             c_layer=c_layer))
         else:
             for x in pbar:
@@ -57,8 +57,8 @@ def compress_image(image, file_name):
             if i == 1:
                 previous_metric = metric
             else:
-                if metric > 0.99 or abs(previous_metric - metric) < 0.00001:
-                    return i
+                if metric > 0.94 or abs(previous_metric - metric) < 0.00001:
+                    return i - 1
                 previous_metric = metric
         return 64
 
@@ -72,11 +72,11 @@ def compress_image(image, file_name):
     Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], \
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    values_to_keep = SSIM(Y, o_length, o_width)
-    if values_to_keep % 2 != 0:
-        values_to_keep += 1
-    if values_to_keep <= 62:
-        values_to_keep += 2
+    # values_to_keep = SSIM(Y, o_length, o_width)
+    # if values_to_keep % 2 != 0:
+    #     values_to_keep += 1
+
+    values_to_keep = 64
 
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
@@ -104,7 +104,6 @@ def compress_image(image, file_name):
 
 
 if __name__ == '__main__':
-    start_time = time.time()
     # print(start_time); print()
     root_path = None  # enter file path of image
     # ap = argparse.ArgumentParser()
@@ -125,6 +124,7 @@ if __name__ == '__main__':
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
         compressed_file_name = root_path + compressed_file
         image = imageio.imread(root_path + image_name)
+    start_time = time.time()
     size, filename = compress_image(image, compressed_file_name)
     file_size = os.stat(image_name).st_size
     print()
