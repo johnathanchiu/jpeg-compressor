@@ -110,7 +110,7 @@ def idct_2d(image, debug=False):
     if debug: print(image); print()
     image.astype(float)
     if debug: print("idct: ", fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')); print()
-    return np.round(fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')).astype(np.int16)
+    return fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')
 
 
 def merge_blocks(input_list, rows, columns):
@@ -132,7 +132,7 @@ def quantize(input, debug=False, c_layer=False):
                    [18, 22, 37, 56, 68, 109, 103, 77],
                    [24, 35, 55, 64, 81, 104, 113, 92],
                    [49, 64, 78, 87, 103, 121, 120, 101],
-                   [72, 92, 95, 98, 112, 100, 103, 99]], dtype=float)
+                   [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
     q_c = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
                     [12, 12, 14, 19, 26, 58, 60, 55],
                     [14, 13, 16, 24, 40, 57, 69, 56],
@@ -140,11 +140,11 @@ def quantize(input, debug=False, c_layer=False):
                     [18, 22, 37, 56, 68, 109, 103, 77],
                     [24, 35, 55, 64, 81, 104, 113, 92],
                     [49, 64, 78, 87, 103, 121, 120, 101],
-                    [72, 92, 95, 98, 112, 100, 103, 99]], dtype=float)
+                    [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
     if debug: print("quantize: ", input/q); print()
     if c_layer:
-        return np.round(input / q_c).astype(np.int8)
-    return np.round(input / q).astype(np.int8)
+        return np.round(input.astype(np.float16) / q_c).astype(np.int8)
+    return np.round(input.astype(np.float16) / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
