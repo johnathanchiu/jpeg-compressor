@@ -1,48 +1,48 @@
 from PIL import Image
 
-import numpy as np
 from scipy.ndimage import *
 
 from tqdm import tqdm
 import time
 
 from JPEG.utils import *
-from JPEG.binutils import *
-from compressor.EntropyReduction import *
+from JPEG.binutils import convertInt, convertBin
+from compressor.EntropyReduction import EntropyReduction
 
 
 def decompress_image(file_name, id='i'):
 
-    def decompress(input, dimx=0, dimy=0, qual=64, debug=False, c_layer=False, count=1):
-        input = np.asarray(list(input))
+    def decompress(input, dimx=0, dimy=0, qual=64, c_layer=False, count=1, debug=False):
         if c_layer:
-            compressed_split = [input[i:i+int(qual * 3 / 4)] for i in range(0, len(input), int(qual * 3 / 4))]
+            compressed_split = np.array([np.array(input[i:i+int(qual * 8 / 10)], dtype=np.int8)
+                                         for i in range(0, len(input), int(qual * 8 / 10))], dtype=np.int8)
         else:
-            compressed_split = [input[i:i+qual] for i in range(0, len(input), qual)]
-        print("Running on layer", count, "/ 3:")
+            compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
+                                         for i in range(0, len(input), qual)], dtype=np.int8)
         image_partitions = []
-        pbar = tqdm(compressed_split)
         append = image_partitions.append
+        pbar = tqdm(compressed_split)
         if debug: print(compressed_split); print()
         if debug:
             for x in compressed_split:
                 idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), debug=True, c_layer=c_layer), debug=True)
         else:
             for x in pbar:
-                pbar.set_description("Running modified jpeg decompression")
+                descrip = "Running modified jpeg decompression " + str(count) + " / 3"
+                pbar.set_description(descrip)
                 append(idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), c_layer=c_layer)))
         if debug: print(image_partitions); print()
-        pbar2 = tqdm(range(1))
-        for _ in pbar2:
-            pbar2.set_description("Merging blocks back to form whole image")
+        pbar_2 = tqdm(range(1))
+        for _ in pbar_2:
+            pbar_2.set_description("Merging blocks back to form whole image")
             image = merge_blocks(image_partitions, dimx, dimy)
         if debug: print(image); print()
         if debug: print("image: ", np.round(image + 128))
         return image + 128
 
-    pbar = tqdm(range(1))
-    for _ in pbar:
-        pbar.set_description("Reading bits from file using entropy decompressor")
+    pbar_1 = tqdm(range(1))
+    for _ in pbar_1:
+        pbar_1.set_description("Reading bits from file using entropy decompressor")
         compressed_bitset = EntropyReduction.bz2_unc(file_name)
 
     quality_metric = compressed_bitset[0]
@@ -53,22 +53,19 @@ def decompress_image(file_name, id='i'):
 
     result_bytes = compressed_bitset[7:]
     no_of_values, no_of_values_cr = int((p_length * p_width) / 64 * quality_metric), \
-                                    int((p_length * p_width) / 64 * (int(quality_metric * 3 / 4)))
+                                    int((p_length * p_width) / 64 * (int(quality_metric * 8 / 10)))
 
-    compressedY, compressedCb, compressedCr = result_bytes[:no_of_values], \
-                                              result_bytes[no_of_values:no_of_values+no_of_values_cr], \
-                                              result_bytes[no_of_values+no_of_values_cr:no_of_values+(2*no_of_values_cr)]
+    compressedY = result_bytes[:no_of_values]
+    compressedCb = result_bytes[no_of_values:no_of_values+no_of_values_cr]
+    compressedCr = result_bytes[no_of_values+no_of_values_cr:no_of_values+(2*no_of_values_cr)]
 
-    newY, newCb, newCr = decompress(compressedY, dimx=s_length, dimy=s_width, qual=quality_metric,
-                                    debug=False, count=1), \
-                         decompress(compressedCb, dimx=s_length, dimy=s_width, qual=quality_metric,
-                                    debug=False, c_layer=True, count=2), \
-                         decompress(compressedCr, dimx=s_length, dimy=s_width, qual=quality_metric,
-                                    debug=False, c_layer=True, count=3)
+    newY = decompress(compressedY, dimx=s_length, dimy=s_width, qual=quality_metric, c_layer=False, count=1)
+    newCb = decompress(compressedCb, dimx=s_length, dimy=s_width, qual=quality_metric, c_layer=True, count=2)
+    newCr = decompress(compressedCr, dimx=s_length, dimy=s_width, qual=quality_metric, c_layer=True, count=3)
 
-    pbar = tqdm(range(1))
-    for _ in pbar:
-        pbar.set_description("Converting image sample space YCbCr -> RGB")
+    pbar_2 = tqdm(range(1))
+    for _ in pbar_2:
+        pbar_2.set_description("Converting image sample space YCbCr -> RGB")
         rgbArray = np.flip(ycbcr2rgb(np.array([newY[0:length, 0:width], newCb[0:length, 0:width],
                                 newCr[0:length, 0:width]]).T), axis=1)
         rgbArray = rotate(rgbArray, 90)
@@ -93,8 +90,8 @@ if __name__ == '__main__':
     # args = vars(ap.parse_args())
     # compressed_file, decompressed_image = args[0], args[1]
     if root_path is None:
-        compressed_file, decompressed_image = input("Compressed file path without extension (You can set a root directory in the code): "), \
-                                          input("Name of decompressed image without extension (You can set a root directory in the code): ")
+        compressed_file = input("Compressed file path without extension (You can set a root directory in the code): ")
+        decompressed_image = input("Name of decompressed image without extension (You can set a root directory in the code): ")
         image_save = decompressed_image + ".png"
         compressed_file_name = compressed_file
     else:

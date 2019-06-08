@@ -5,8 +5,8 @@ import numpy as np
 
 def split(array, nrows, ncols):
     """Split a matrix into sub-matrices."""
-    return [array[x:x + nrows, y:y + ncols] for x in range(0, array.shape[0], nrows) for y in range(0, array.shape[1],
-                                                                                                    ncols)]
+    return np.array([np.array(array[x:x + nrows, y:y + ncols], dtype=np.int16) for x in range(0, array.shape[0], nrows)
+                     for y in range(0, array.shape[1], ncols)], dtype=np.int16)
 
 
 # converts rgb to ycbcr colorspace
@@ -52,12 +52,12 @@ def calc_matrix_eight_size(image_layer):
 def capture(image_patch, values=64, c_layer=False):
     image_patch = image_patch.flatten()
     if c_layer:
-        return np.round(image_patch[:int(values * 3 / 4)].astype(int))
-    return np.round(image_patch[:int(values)].astype(int))
+        return image_patch[:int(values * 8 / 10)].astype(int)
+    return image_patch[:int(values)].astype(int)
 
 
 def rebuild(image):
-    return np.round(np.append(image, [0]*(64-len(image))).reshape((8, 8)))
+    return np.append(image, [0]*(64-len(image))).reshape((8, 8))
 
 
 def zig_zag(input_matrix, block_size=8, debug=False):
@@ -77,7 +77,7 @@ def zig_zag(input_matrix, block_size=8, debug=False):
                 z[index] = input_matrix[i - j, j]
     z = z.reshape((8, 8), order='C')
     if debug: print("zig zag: ", np.round(z)); print()
-    return np.round(z)
+    return z
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):
@@ -133,18 +133,18 @@ def quantize(input, debug=False, c_layer=False):
                    [24, 35, 55, 64, 81, 104, 113, 92],
                    [49, 64, 78, 87, 103, 121, 120, 101],
                    [72, 92, 95, 98, 112, 100, 103, 99]])
-    q_c = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
-                    [12, 12, 14, 19, 26, 58, 60, 55],
-                    [14, 13, 16, 24, 40, 57, 69, 56],
-                    [14, 17, 22, 29, 51, 87, 80, 62],
-                    [18, 22, 37, 56, 68, 109, 103, 77],
-                    [24, 35, 55, 64, 81, 104, 113, 92],
-                    [49, 64, 78, 87, 103, 121, 120, 101],
-                    [72, 92, 95, 98, 112, 100, 103, 99]])
+    q_c = np.array([[8, 4, 3, 5, 9, 12, 31, 37],
+                    [3, 2, 8, 3, 16, 35, 36, 33],
+                    [4, 4, 1, 2, 24, 34, 41, 34],
+                    [2, 1, 5, 17, 31, 52, 48, 37],
+                    [6, 13, 22, 34, 41, 65, 62, 46],
+                    [14, 21, 33, 38, 49, 62, 68, 55],
+                    [29, 38, 47, 52, 62, 73, 72, 61],
+                    [43, 55, 57, 59, 67, 60, 62, 59]])
     if debug: print("quantize: ", input/q); print()
     if c_layer:
-        return input / q_c
-    return input / q
+        return (input / q_c).astype(np.int8)
+    return (input / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
@@ -157,17 +157,17 @@ def undo_quantize(input, debug=False, c_layer=False):
                   [24, 35, 55, 64, 81, 104, 113, 92],
                   [49, 64, 78, 87, 103, 121, 120, 101],
                   [72, 92, 95, 98, 112, 100, 103, 99]])
-    q_c = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
-                    [12, 12, 14, 19, 26, 58, 60, 55],
-                    [14, 13, 16, 24, 40, 57, 69, 56],
-                    [14, 17, 22, 29, 51, 87, 80, 62],
-                    [18, 22, 37, 56, 68, 109, 103, 77],
-                    [24, 35, 55, 64, 81, 104, 113, 92],
-                    [49, 64, 78, 87, 103, 121, 120, 101],
-                    [72, 92, 95, 98, 112, 100, 103, 99]])
+    q_c = np.array([[8, 4, 3, 5, 9, 12, 31, 37],
+                    [3, 2, 8, 3, 16, 35, 36, 33],
+                    [4, 4, 1, 2, 24, 34, 41, 34],
+                    [2, 1, 5, 17, 31, 52, 48, 37],
+                    [6, 13, 22, 34, 41, 65, 62, 46],
+                    [14, 21, 33, 38, 49, 62, 68, 55],
+                    [29, 38, 47, 52, 62, 73, 72, 61],
+                    [43, 55, 57, 59, 67, 60, 62, 59]])
     if debug: print("undo quantize: ", input*q); print()
     if c_layer:
-        return input * q_c
-    return input * q
+        return input.astype(np.int16) * q_c
+    return input.astype(np.int16) * q
 
 

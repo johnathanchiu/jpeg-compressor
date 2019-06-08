@@ -1,6 +1,6 @@
-from compressor.EntropyReduction import *
+from compressor.EntropyReduction import EntropyReduction
 from JPEG.utils import *
-from JPEG.binutils import *
+from JPEG.binutils import convertInt, convertBin
 
 from skimage.measure._structural_similarity import compare_ssim as ssim
 
@@ -8,18 +8,19 @@ from tqdm import tqdm
 
 import imageio
 import array
+import os
 
 import time
 
 
 def compress_image(image, file_name):
 
-    def compress(image, qual=64, debug=False, c_layer=False):
-        image = image.copy().astype("float")
+    def compress(image, qual=64, count=1, debug=False, c_layer=False):
+        image_copy = image.copy().astype(np.uint8)
         compressed_data = array.array('b', [])
         ext = compressed_data.extend
         if debug: print(image); print()
-        list_of_patches = split(matrix_multiple_of_eight(image) - 128, 8, 8)
+        list_of_patches = split(matrix_multiple_of_eight(image_copy) - 128, 8, 8).astype(np.int8)
         pbar = tqdm(list_of_patches)
         if debug:
             for x in list_of_patches:
@@ -27,7 +28,8 @@ def compress_image(image, file_name):
                             c_layer=c_layer))
         else:
             for x in pbar:
-                pbar.set_description("Running modified jpeg compression")
+                descrip = "Running modified jpeg compression " + str(count) + " / 3"
+                pbar.set_description(descrip)
                 ext(capture(zig_zag(quantize(dct_2d(x), c_layer=c_layer)), values=qual, c_layer=c_layer))
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
@@ -36,12 +38,12 @@ def compress_image(image, file_name):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
         grab_x, grab_y = int(photo_x / 2), int(photo_y / 2)
         original_sample = np.array(photo[grab_x:grab_x + 176, grab_y:grab_y + 176], dtype=np.int16)
-        pbar = tqdm(range(1, 64))
+        pbar = tqdm(range(18, 64))
         previous_metric = 0
         for i in pbar:
             compressed_data = array.array('b', [])
             partitions = []
-            pbar.set_description("Running SSIM metric quality, 1 through 64 sampled weights")
+            pbar.set_description("Running SSIM metric quality, 18 through 64 sampled weights")
             list_of_patches = split(original_sample - 128, 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
@@ -55,7 +57,7 @@ def compress_image(image, file_name):
             if i == 1:
                 previous_metric = metric
             else:
-                if metric > 0.98 or abs(previous_metric - metric) < 0.00001:
+                if metric > 0.98 or abs(previous_metric - metric) < 0.000001:
                     return i
                 previous_metric = metric
         return 64
@@ -73,8 +75,8 @@ def compress_image(image, file_name):
     values_to_keep = SSIM(Y, o_length, o_width)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
-    if values_to_keep <= 62:
-        values_to_keep += 2
+    if values_to_keep <= 60:
+        values_to_keep += 4
 
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
@@ -87,9 +89,9 @@ def compress_image(image, file_name):
     p_width = [convertInt(dimensions[16:24], bits=8), convertInt(dimensions[24:32], bits=8)]
     keep = [values_to_keep]
 
-    compressedY = compress(Y, qual=values_to_keep, debug=False)
-    compressedCb = compress(Cb, qual=values_to_keep, debug=False, c_layer=True)
-    compressedCr = compress(Cr, qual=values_to_keep, debug=False, c_layer=True)
+    compressedY = compress(Y, qual=values_to_keep, count=1, debug=False)
+    compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=False, c_layer=True)
+    compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=False, c_layer=True)
 
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
     compressed = dim + compressedY + compressedCb + compressedCr

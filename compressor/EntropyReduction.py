@@ -3,7 +3,6 @@ import numpy as np
 import bz2
 
 import struct
-import sys
 import os
 
 
