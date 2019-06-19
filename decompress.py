@@ -88,6 +88,8 @@ if __name__ == '__main__':
     #                 help="decompressed image")
     # args = vars(ap.parse_args())
     # compressed_file, decompressed_image = args[0], args[1]
+    print("When inputting file paths, .bz2 extension is already added for you in the code, "
+          "inputting with .bz2 extension will cause an error")
     if root_path is None:
         compressed_file = input("Compressed file path without extension (You can set a root directory in the code): ")
         decompressed_image = input("Name of decompressed image without extension (You can set a root directory in the code): ")

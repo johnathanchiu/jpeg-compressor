@@ -113,13 +113,15 @@ if __name__ == '__main__':
     # args = vars(ap.parse_args())
     # image_name, compressed_file = args["image"], args["compressed"]
     # compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
+    print("When inputting file paths, .bz2 extension is already added for you in the code, "
+          "inputting with .bz2 extension will cause an error")
     if root_path is None:
-        image_name, compressed_file = input("Image path (You can set a root directory in the code): "), \
+        image_name, compressed_file = input("Image path with extension (You can set a root directory in the code): "), \
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
         compressed_file_name = compressed_file
         image = imageio.imread(image_name)
     else:
-        image_name, compressed_file = input("Image path: "), \
+        image_name, compressed_file = input("Image path with extension: "), \
                                       input("Compressed file name (whatever you want to name the bz2 compressed file): ")
         compressed_file_name = root_path + compressed_file
         image = imageio.imread(root_path + image_name)
