@@ -5,7 +5,7 @@ entropy algorithm uses bZip2 (bz2) rather than the usual run-length encoder (RLE
 
 Use compress.py to compress photos. Put in entire file path when prompted.
 
-Use decompress.py to decompress photos. Save it as a PNG to view or view immediately.
+Use decompress.py to decompress photos. Save it as a PNG to view or otherwise view immediately using imageio.
 
 # Recent Additions
 
