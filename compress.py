@@ -24,13 +24,13 @@ def compress_image(image, file_name):
         pbar = tqdm(list_of_patches)
         if debug:
             for x in list_of_patches:
-                ext(capture(zig_zag(quantize(dct_2d(x, debug=True), debug=True, c_layer=c_layer), debug=True), values=qual,
-                            c_layer=c_layer))
+                ext((capture(zig_zag(quantize(dct_2d(x, debug=True), debug=True, c_layer=c_layer), debug=True),
+                             values=qual, c_layer=c_layer)))
         else:
             for x in pbar:
                 descrip = "Running modified jpeg compression " + str(count) + " / 3"
                 pbar.set_description(descrip)
-                ext(capture(zig_zag(quantize(dct_2d(x), c_layer=c_layer)), values=qual, c_layer=c_layer))
+                ext((capture(zig_zag(quantize(dct_2d(x), c_layer=c_layer)), values=qual, c_layer=c_layer)))
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
@@ -91,7 +91,6 @@ def compress_image(image, file_name):
     compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=False, c_layer=True)
     compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=False, c_layer=True)
 
-    print(len(compressedY), len(compressedCb), len(compressedCr))
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
     compressed = dim + compressedY + compressedCb + compressedCr
     pbar = tqdm(range(1))

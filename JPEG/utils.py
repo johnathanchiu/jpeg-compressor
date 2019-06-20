@@ -50,14 +50,14 @@ def calc_matrix_eight_size(image_layer):
 
 # grab top row of 8 by 8 and 0:4
 def capture(image_patch, values=64, c_layer=False):
-    image_patch = image_patch.flatten().astype(int)
+    image_patch = image_patch.astype(np.int16)
     if c_layer:
         return image_patch[:int(values * 8 / 10)]
-    return image_patch[:int(values)]
+    return tuple(image_patch[:int(values)])
 
 
 def rebuild(image):
-    return np.append(image, [0]*(64-len(image))).reshape((8, 8))
+    return np.append(image, [0]*(64-len(image)))
 
 
 def zig_zag(input_matrix, block_size=8, debug=False):
@@ -75,13 +75,11 @@ def zig_zag(input_matrix, block_size=8, debug=False):
                 z[index] = input_matrix[j, i - j]
             else:
                 z[index] = input_matrix[i - j, j]
-    z = z.reshape((8, 8), order='C')
     if debug: print("zig zag: ", np.round(z)); print()
     return z
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):
-    input_matrix = np.squeeze(input_matrix.reshape((1, 64), order='C'))
     output_matrix = np.empty([block_size, block_size])
     index = -1
     for i in range(0, 2 * block_size - 1):
@@ -141,10 +139,10 @@ def quantize(input, debug=False, c_layer=False):
                     [24, 35, 55, 64, 81, 104, 113, 92],
                     [49, 64, 78, 87, 103, 121, 120, 101],
                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
-    if debug: print("quantize: ", input/q); print()
+    if debug: print("quantize: ", input / q); print()
     if c_layer:
-        return np.round(input.astype(np.float16) / q_c).astype(np.int8)
-    return np.round(input.astype(np.float16) / q).astype(np.int8)
+        return np.round(np.multiply(input.astype(np.float16), 1/q_c)).astype(np.int8)
+    return np.round(np.multiply(input.astype(np.float16), 1/q)).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
@@ -165,9 +163,9 @@ def undo_quantize(input, debug=False, c_layer=False):
                     [24, 35, 55, 64, 81, 104, 113, 92],
                     [49, 64, 78, 87, 103, 121, 120, 101],
                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
-    if debug: print("undo quantize: ", input*q); print()
+    if debug: print("undo quantize: ", input * q); print()
     if c_layer:
-        return input.astype(np.float16) * q_c
-    return input.astype(np.float16) * q
+        return np.multiply(input.astype(np.float16), q_c)
+    return np.multiply(input.astype(np.float16), q)
 
 
