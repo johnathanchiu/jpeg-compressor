@@ -3,6 +3,7 @@ from PIL import Image
 from scipy.ndimage import *
 
 from tqdm import tqdm
+import array
 import time
 
 from JPEG.utils import *
@@ -19,7 +20,7 @@ def decompress_image(file_name, id='i'):
         else:
             compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
                                          for i in range(0, len(input), qual)], dtype=np.int8)
-        image_partitions = []
+        image_partitions = array.array('h', [])
         append = image_partitions.append
         pbar = tqdm(compressed_split)
         if debug: print(compressed_split); print()
