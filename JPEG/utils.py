@@ -1,12 +1,13 @@
 from scipy import fftpack
 from scipy import *
 import numpy as np
+import array
 
 
-def split(array, nrows, ncols):
+def split(matrix, nrows, ncols):
     """Split a matrix into sub-matrices."""
-    return np.array([array[x:x + nrows, y:y + ncols] for x in range(0, array.shape[0], nrows)
-            for y in range(0, array.shape[1], ncols)], dtype=np.int8)
+    return np.array([np.array(matrix[x:x + nrows, y:y + ncols], dtype=np.int8) for x in range(0, matrix.shape[0], nrows)
+            for y in range(0, matrix.shape[1], ncols)], dtype=np.int8)
 
 
 # converts rgb to ycbcr colorspace
@@ -62,7 +63,7 @@ def rebuild(image):
 
 def zig_zag(input_matrix, block_size=8, debug=False):
     if debug: print(np.round(input_matrix)); print()
-    z = np.empty([block_size * block_size])
+    z = np.empty([block_size * block_size], dtype=np.int8)
     index = -1
     for i in range(0, 2 * block_size - 1):
         if i < block_size:
@@ -80,7 +81,7 @@ def zig_zag(input_matrix, block_size=8, debug=False):
 
 
 def zig_zag_reverse(input_matrix, block_size=8, debug=False):
-    output_matrix = np.empty([block_size, block_size])
+    output_matrix = np.empty([block_size, block_size], dtype=np.int8)
     index = -1
     for i in range(0, 2 * block_size - 1):
         if i < block_size:
@@ -141,8 +142,8 @@ def quantize(input, debug=False, c_layer=False):
                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
     if debug: print("quantize: ", input / q); print()
     if c_layer:
-        return np.round(np.multiply(input.astype(np.float16), 1/q_c)).astype(np.int8)
-    return np.round(np.multiply(input.astype(np.float16), 1/q)).astype(np.int8)
+        return np.round(input.astype(np.float16) / q_c).astype(np.int8)
+    return np.round(input.astype(np.float16) / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c_layer=False):
@@ -165,7 +166,7 @@ def undo_quantize(input, debug=False, c_layer=False):
                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
     if debug: print("undo quantize: ", input * q); print()
     if c_layer:
-        return np.multiply(input.astype(np.float16), q_c)
-    return np.multiply(input.astype(np.float16), q)
+        return input.astype(np.float16) * q_c
+    return input.astype(np.float16) * q
 
 
