@@ -20,7 +20,7 @@ def decompress_image(file_name, id='i'):
         else:
             compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
                                          for i in range(0, len(input), qual)], dtype=np.int8)
-        image_partitions = array.array('h', [])
+        image_partitions = []
         append = image_partitions.append
         pbar = tqdm(compressed_split)
         if debug: print(compressed_split); print()
@@ -73,10 +73,10 @@ def decompress_image(file_name, id='i'):
 
     if id == 'Y' or id == 'y':
         img = Image.fromarray(rgbArray)
-        img.save(image_save, "JPEG", optimize=True)
+        img.save(image_save, "JPEG")
     else:
         img = Image.fromarray(rgbArray)
-        img.save(image_save, "PNG", optimize=True)
+        img.save(image_save, "PNG")
 
 
 if __name__ == '__main__':
