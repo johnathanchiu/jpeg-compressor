@@ -1,5 +1,7 @@
 # JPEG-COMPRESSOR
 
+**DISCLAIMER: This software is licensed under Apache Licenses. All IP and rights to the algorithm belongs to the originator of the algorithm - Johnathan Chiu. Any attempts to employ the algorithm for-profit use must receive permission from the creator of the algorithm first.**
+
 This algorithm is a theoretical modification to the preexisting JPEG algorithm for reduced file sizes. The lossless
 entropy algorithm uses bZip2 (bz2) rather than the usual run-length encoder (RLE) and huffman tree. The algorithm incorporates the use of Structural Similarity Index Measurement (SSIM) to discard redundant coefficients to the human eye.
 
