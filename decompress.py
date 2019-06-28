@@ -5,6 +5,7 @@ from scipy.ndimage import *
 from tqdm import tqdm
 import argparse
 import time
+import os
 
 from JPEG.utils import *
 from JPEG.binutils import convertInt, convertBin
@@ -82,7 +83,7 @@ def decompress_image(file_name, image_save, id='i'):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument("-c", "--compressed", required=True, help="compressed file name with path & extension")
-    ap.add_argument("-d", "--decompressed", required=True, help="decompressed image path")
+    ap.add_argument("-d", "--decompressed", default='./', help="decompressed image path")
     ap.add_argument("-i", "--iden", default='N', help="Y/y for decompressed jpg")
     args = ap.parse_args()
     compressed_file, decompressed_image = args.compressed, args.decompressed
