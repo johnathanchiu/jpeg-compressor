@@ -3,7 +3,7 @@ from PIL import Image
 from scipy.ndimage import *
 
 from tqdm import tqdm
-import array
+import argparse
 import time
 
 from JPEG.utils import *
@@ -11,7 +11,7 @@ from JPEG.binutils import convertInt, convertBin
 from compressor.EntropyReduction import EntropyReduction
 
 
-def decompress_image(file_name, id='i'):
+def decompress_image(file_name, image_save, id='i'):
 
     def decompress(input, dimx=0, dimy=0, qual=64, c_layer=False, count=1, debug=False):
         if c_layer:
@@ -80,32 +80,19 @@ def decompress_image(file_name, id='i'):
 
 
 if __name__ == '__main__':
-    # print(start_time); print()
-    root_path = None  # set root directory of project file
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument("-c", "--compressed", required=True,
-    #                 help="compressed file name")
-    # ap.add_argument("-d", "--decompressed", required=True,
-    #                 help="decompressed image")
-    # args = vars(ap.parse_args())
-    # compressed_file, decompressed_image = args[0], args[1]
-    print("When inputting file paths, .bz2 extension is already added for you in the code, "
-          "inputting with .bz2 extension will cause an error")
-    if root_path is None:
-        compressed_file = input("Compressed file path without extension (You can set a root directory in the code): ")
-        decompressed_image = input("Name of decompressed image without extension (You can set a root directory in the code): ")
-        image_save = decompressed_image + ".png"
-        compressed_file_name = compressed_file
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-c", "--compressed", required=True, help="compressed file name with path & extension")
+    ap.add_argument("-d", "--decompressed", required=True, help="decompressed image path")
+    ap.add_argument("-i", "--iden", default='N', help="Y/y for decompressed jpg")
+    args = ap.parse_args()
+    compressed_file, decompressed_image = args.compressed, args.decompressed
+    _, tail = os.path.split(compressed_file)
+    if args.iden == 'Y' or args.iden == 'y':
+        image_save = decompressed_image + os.path.splitext(tail)[0] + '.jpg'
     else:
-        compressed_file, decompressed_image = input("Compressed file path without extension: "), \
-                                              input("Name of decompressed image without extension: ")
-        image_save = decompressed_image + ".png"
-        compressed_file_name = root_path + compressed_file
-    iden = input("Save image as a compressed jpeg? [potential lower quality jpeg] (Y/N): ")
-    if iden == 'Y' or iden == 'y':
-        image_save = decompressed_image + ".jpg"
+        image_save = decompressed_image + os.path.splitext(tail)[0] + '.png'
     print();
     start_time = time.time()
-    decompress_image(compressed_file_name, id=iden)
+    decompress_image(compressed_file, image_save, id=args.iden)
     print(); print("Decompression converged, your file is at: ", image_save)
     print("--- %s seconds ---" % (time.time() - start_time))

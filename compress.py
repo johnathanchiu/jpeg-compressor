@@ -5,6 +5,7 @@ from JPEG.binutils import convertInt, convertBin
 from skimage.measure._structural_similarity import compare_ssim as ssim
 
 from tqdm import tqdm
+import argparse
 
 import imageio
 import array
@@ -102,31 +103,18 @@ def compress_image(image, file_name):
 
 
 if __name__ == '__main__':
-    # print(start_time); print()
-    root_path = None  # enter file path of image
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument("-i", "--image", required=True,
-    #                 help="image name")
-    # ap.add_argument("-c", "--compressed", required=True,
-    #                 help="compressed file name")
-    # args = vars(ap.parse_args())
-    # image_name, compressed_file = args["image"], args["compressed"]
-    # compressed_file_name = root_path + "compressed/fileSizes/" + compressed_file
-    print("When inputting file paths, .bz2 extension is already added for you in the code, "
-          "inputting with .bz2 extension will cause an error")
-    if root_path is None:
-        image_name, compressed_file = input("Image path with extension (You can set a root directory in the code): "), \
-                                      input("Compressed file name (whatever you want to name the bz2 compressed file): ")
-        compressed_file_name = compressed_file
-        image = imageio.imread(image_name)
-    else:
-        image_name, compressed_file = input("Image path with extension: "), \
-                                      input("Compressed file name (whatever you want to name the bz2 compressed file): ")
-        compressed_file_name = root_path + compressed_file
-        image = imageio.imread(root_path + image_name)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--image", required=True,
+                    help="image name with path")
+    ap.add_argument("-c", "--compressed", required=True,
+                    help="folder to save compressed file")
+    args = ap.parse_args()
+    image_path, compressed = args.image, args.compressed
     start_time = time.time()
-    size, filename = compress_image(image, compressed_file_name)
-    file_size = os.stat(image_name).st_size
+    image = imageio.imread(image_path)
+    _, tail = os.path.split(image_path)
+    size, filename = compress_image(image, compressed+'/'+os.path.splitext(tail)[0])
+    file_size = os.stat(size).st_size
     print()
     print("file size after (entropy) compression: ", size)
     print("file reduction percentage (new file size / old file size): ", (size / file_size) * 100, "%")
