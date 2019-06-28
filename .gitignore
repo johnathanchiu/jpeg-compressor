@@ -15,3 +15,6 @@
 # original writer's file used for module testing
 smalltester.py
 rewritejpeg.py
+metadata.py
+compressfolder.py
+decompressfolder.py
