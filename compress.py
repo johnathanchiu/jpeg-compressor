@@ -104,9 +104,9 @@ def compress_image(image, file_name):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--image", required=True,
+    ap.add_argument('-i', "--image", required=True,
                     help="image name with path")
-    ap.add_argument("-c", "--compressed", default='.',
+    ap.add_argument('-c', "--compressed", default='.',
                     help="folder to save compressed file without trailing '/'")
     args = ap.parse_args()
     image_path, compressed = args.image, args.compressed
