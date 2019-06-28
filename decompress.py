@@ -77,7 +77,7 @@ def decompress_image(file_name, image_save, id='i'):
         img.save(image_save, "JPEG")
     else:
         img = Image.fromarray(rgbArray)
-        img.save(image_save, "PNG")
+        img.save(image_save, "BMP")
 
 
 if __name__ == '__main__':
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     if args.iden == 'Y' or args.iden == 'y':
         image_save = decompressed_image + os.path.splitext(tail)[0] + '.jpg'
     else:
-        image_save = decompressed_image + os.path.splitext(tail)[0] + '.png'
+        image_save = decompressed_image + os.path.splitext(tail)[0] + '.bmp'
     print();
     start_time = time.time()
     decompress_image(compressed_file, image_save, id=args.iden)
