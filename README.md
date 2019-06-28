@@ -14,6 +14,10 @@ than the original JPEG. This compressor should also outperform Google's Guetzli.
 transfer JPEG files quicker and using less bandwidth. The compressed JPEG is also compatible with all OS. Disclaimer:
 compressed JPEG file contains NO metadata. You can delete the original file at your own discretion.
 
+6.28
+
+You can run compression and decompression on entire folders. Use compressfolder.py and decompressfolder.py.
+
 # Setup
 
 Check dependencies at bottom of README
