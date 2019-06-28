@@ -24,7 +24,7 @@ python compress.py [-i | Full image path with file and extension] [-c | Path to 
  
 For decompress.py example usage:
 
-python decompress.py [-i | y to save image as jpeg/default=no] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
+python decompress.py [-i | use letter y to save image as jpeg/default=letter n to denote that save the image as a png] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
 
 # Explanations
 
