@@ -26,6 +26,14 @@ For decompress.py example usage:
 
 python decompress.py [-i | use letter y to save image as jpeg/default=letter n to denote that save the image as a png] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
 
+For compressfolder.py example usage:
+
+python compressfolder.py [-i | folder of images] [-c | where to store compressed files]
+
+For decompressfolder.py example usage:
+
+python decompressfolder.py [-c | folder of compressed images] [-d | directory to store decompressed images for viewing]
+
 Use -h for full details.
 
 # Explanations
