@@ -1,11 +1,11 @@
 # JPEG-COMPRESSOR
 
 This algorithm is a theoretical modification to the preexisting JPEG algorithm for reduced file sizes. The lossless
-entropy algorithm uses bZip2 (bz2) rather than the usual run-length encoder (RLE) and huffman tree.
+entropy algorithm uses bZip2 (bz2) rather than the usual run-length encoder (RLE) and huffman tree. The algorithm incorporates the use of Structural Similarity Index Measurement (SSIM) to discard redundant coefficients to the human eye.
 
-Use compress.py to compress photos. Put in entire file path when prompted.
+Use compress.py to compress photos.
 
-Use decompress.py to decompress photos. Save it as a PNG to view or otherwise view immediately using imageio.
+Use decompress.py to decompress photos. Save it as a decompressed PNG or JPEG.
 
 # Recent Additions
 
@@ -16,15 +16,19 @@ compressed JPEG file contains NO metadata. You can delete the original file at y
 
 # Setup
 
-All file paths are currently under my own directories, you can change around the file paths to make experimenting with
-the compressor easier. For example changing the "root_path" variable to your own path you want to file to be saved to.
-These files are also configured under a special folder I put them in. Check main method to see how to fix.
-For compress.py change line 107, your "root_path". For decompress.py change line 83, your "root_path".
+Check dependencies at bottom of README
+
+For compress.py example usage:
+
+python compress.py [-i | Full image path with file and extension] [-c | Path to folder where to save compressed file/default=working directory]
+ 
+For decompress.py example usage:
+
+python decompress.py [-i | y to save image as jpeg/default=no] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
 
 # Explanations
 
-All file data is saved within the bz2 file. I am working on developing a wrapper for the bz2 file so the image does
-not have to be saved into a PNG. The PNG file that is saved when decompressed is for viewing purposes (emphasized).
+All file data is saved within the bz2 file. The PNG file that is saved when decompressed is for viewing purposes (emphasized).
 You can delete the PNG file and original after viewing, all image data is in the bz2 file.
 When comparing file sizes, compare the bz2 file to the original image (JPEG file).
 
@@ -32,14 +36,12 @@ When comparing file sizes, compare the bz2 file to the original image (JPEG file
 
 Though it is mentioned above, it is not recommended. There is no meta data in the bz2 file.
 Furthermore, this algorithm is theoretical, 1. there may
-be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image.
+be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image. You need to use the provided decompressor to decode the specific sequence of values.
+
 Like I mentioned, this is a completely novel compression algorithm.
 
 # Future Works
 
-Currently, this program only accepts one quality value. Future plans are to enable the user to choose the quality of the photo.
-The algorithm will work using an SSIM metric that gives comparisons on a small partition of the image (Update: This part has been updated,
-the algorithm only accepts one quality but it chooses the best possible quality in relative to the best compression ratios).
 Novel lossless entropy encoder which outperforms bz2 and gzip to be added as replacement of bz2 also coming soon.
 Paper to how the entire algorithm works will be linked soon!
 
