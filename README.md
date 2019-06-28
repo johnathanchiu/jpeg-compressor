@@ -9,6 +9,8 @@ Use decompress.py to decompress photos. Save it as a decompressed PNG or JPEG.
 
 # Recent Additions
 
+6.10
+
 You can now save the image as a compressed JPEG. The JPEG won't be as small as a bz2 file but will be smaller
 than the original JPEG. This compressor should also outperform Google's Guetzli. The compressed JPEG will allow you to
 transfer JPEG files quicker and using less bandwidth. The compressed JPEG is also compatible with all OS. Disclaimer:
