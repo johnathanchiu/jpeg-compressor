@@ -82,9 +82,9 @@ def decompress_image(file_name, image_save, id='i'):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument("-c", "--compressed", required=True, help="compressed file name with path & extension")
-    ap.add_argument("-d", "--decompressed", default='./', help="decompressed image path")
-    ap.add_argument("-i", "--iden", default='N', help="Y/y for decompressed jpg")
+    ap.add_argument('-c', "--compressed", required=True, help="compressed file name with path & extension")
+    ap.add_argument('-d', "--decompressed", default='./', help="decompressed image path")
+    ap.add_argument('-i', "--iden", default='N', help="Y/y for decompressed jpg")
     args = ap.parse_args()
     compressed_file, decompressed_image = args.compressed, args.decompressed
     _, tail = os.path.split(compressed_file)
