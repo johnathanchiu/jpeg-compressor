@@ -26,6 +26,8 @@ For decompress.py example usage:
 
 python decompress.py [-i | use letter y to save image as jpeg/default=letter n to denote that save the image as a png] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
 
+Use -h for full details.
+
 # Explanations
 
 All file data is saved within the bz2 file. The PNG file that is saved when decompressed is for viewing purposes (emphasized).
