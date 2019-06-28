@@ -38,7 +38,7 @@ def compress_image(image, file_name):
 
     def SSIM(photo, photo_x, photo_y):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
-        grab_x, grab_y = int(photo_x / random.uniform(1, 4)), int(photo_y / random.uniform(1, 4))
+        grab_x, grab_y = int(photo_x / random.uniform(2, 4)), int(photo_y / random.uniform(2, 4))
         original_sample = np.array(photo[grab_x:grab_x + 176, grab_y:grab_y + 176], dtype=np.int16)
         pbar = tqdm(range(14, 64))
         previous_metric = 0
