@@ -115,7 +115,7 @@ if __name__ == '__main__':
     image = imageio.imread(image_path)
     _, tail = os.path.split(image_path)
     size, filename = compress_image(image, compressed+os.path.splitext(tail)[0])
-    file_size = os.stat(filename).st_size
+    file_size = os.stat(image_path).st_size
     print()
     print("file size after (entropy) compression: ", size)
     print("file reduction percentage (new file size / old file size): ", (size / file_size) * 100, "%")
