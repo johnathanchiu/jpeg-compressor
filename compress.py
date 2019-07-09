@@ -106,15 +106,15 @@ def compress_image(image, file_name):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=True,
-                    help="image name with path")
+                    help="Image name with path")
     ap.add_argument('-c', "--compressed", default='.',
-                    help="folder to save compressed file without trailing '/'")
+                    help="folder to save compressed file")
     args = ap.parse_args()
     image_path, compressed = args.image, args.compressed
     start_time = time.time()
     image = imageio.imread(image_path)
     _, tail = os.path.split(image_path)
-    size, filename = compress_image(image, compressed+'/'+os.path.splitext(tail)[0])
+    size, filename = compress_image(image, compressed+os.path.splitext(tail)[0])
     file_size = os.stat(filename).st_size
     print()
     print("file size after (entropy) compression: ", size)
