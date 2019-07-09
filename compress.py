@@ -108,7 +108,7 @@ if __name__ == '__main__':
     ap.add_argument('-i', "--image", required=True,
                     help="Image name with path")
     ap.add_argument('-c', "--compressed", default='.',
-                    help="folder to save compressed file")
+                    help="Folder to save compressed file")
     args = ap.parse_args()
     image_path, compressed = args.image, args.compressed
     start_time = time.time()
