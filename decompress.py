@@ -15,14 +15,9 @@ from compressor.EntropyReduction import EntropyReduction
 def decompress_image(file_name, image_save):
 
     def decompress(input, dimx=0, dimy=0, qual=64, c=False, count=1, debug=False):
-        if c:
-            compressed_split = np.array([np.array(input[i:i+int(qual * SAMPLE_RATIO)], dtype=np.int8)
-                                         for i in range(0, len(input), int(qual * SAMPLE_RATIO))], dtype=np.int8)
-        else:
-            compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
-                                         for i in range(0, len(input), qual)], dtype=np.int8)
-        image_partitions = []
-        append = image_partitions.append
+        compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
+                                     for i in range(0, len(input), qual)], dtype=np.int8)
+        image_partitions = []; append = image_partitions.append
         pbar = tqdm(compressed_split)
         if debug: print(compressed_split); print()
         if debug:
@@ -54,16 +49,16 @@ def decompress_image(file_name, image_save):
     length, width = p_length - compressed_bitset[5], p_width - compressed_bitset[6]
 
     result_bytes = compressed_bitset[7:]
-    no_of_values, no_of_values_cr = int((p_length * p_width) / 64 * quality_metric), \
-                                    int((p_length * p_width) / 64 * quality_metric * SAMPLE_RATIO)
+    no_of_values, no_of_values_cr = int(p_length * p_width / 64 * quality_metric), \
+                                    int(p_length * p_width / 64 * int(quality_metric * SAMPLE_RATIO))
 
     compressedY = result_bytes[:no_of_values]
     compressedCb = result_bytes[no_of_values:no_of_values+no_of_values_cr]
     compressedCr = result_bytes[no_of_values+no_of_values_cr:no_of_values+(2*no_of_values_cr)]
 
     newY = decompress(compressedY, dimx=s_length, dimy=s_width, qual=quality_metric, c=False, count=1)
-    newCb = decompress(compressedCb, dimx=s_length, dimy=s_width, qual=quality_metric, c=True, count=2)
-    newCr = decompress(compressedCr, dimx=s_length, dimy=s_width, qual=quality_metric, c=True, count=3)
+    newCb = decompress(compressedCb, dimx=s_length, dimy=s_width, qual=int(quality_metric*SAMPLE_RATIO), c=True, count=2)
+    newCr = decompress(compressedCr, dimx=s_length, dimy=s_width, qual=int(quality_metric*SAMPLE_RATIO), c=True, count=3)
 
     pbar_2 = tqdm(range(1))
     for _ in pbar_2:
@@ -80,7 +75,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-c', "--compressed", required=True, help="compressed file name with path & extension")
     ap.add_argument('-d', "--decompressed", default='./', help="path to file for decompressed image")
-    ap.add_argument('-i', "--iden", default='Y', help="Y/y for decompressed jpg")
+    ap.add_argument('-i', "--iden", default='n', help="Y/y for decompressed jpg")
     args = ap.parse_args()
     compressed_file, decompressed_image = args.compressed, args.decompressed
     _, tail = os.path.split(compressed_file)

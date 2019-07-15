@@ -37,26 +37,26 @@ def compress_image(image, file_name, debug=False):
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
-    def SSIM(photo, photo_x, photo_y):
+    def SSIM(photo, photo_x, photo_y, sample_area=200, c=False):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
-        grab_x, grab_y = int(photo_x / random.uniform(2, 4)), int(photo_y / random.uniform(2, 4))
-        original_sample = np.array(photo[grab_x:grab_x + 200, grab_y:grab_y + 200], dtype=np.int16)
-        pbar = tqdm(range(12, 64))
+        grab_x, grab_y = int(photo_x / random.uniform(2, 8)), int(photo_y / random.uniform(2, 8))
+        original_sample = np.array(photo[grab_x:grab_x + sample_area, grab_y:grab_y + sample_area], dtype=np.int16)
+        pbar = tqdm(range(16, 64))
         last_metric = 0
         for i in pbar:
             compressed_data, partitions = array.array('b', []), []
-            pbar.set_description("Running SSIM metric quality, 12 through 64 sampled weights")
-            list_of_patches = split(original_sample - 128, 8, 8)
+            pbar.set_description("Running SSIM metric quality, 16 through 64 sampled weights")
+            list_of_patches = split(original_sample.copy() - 128, 8, 8)
             for x in list_of_patches:
-                comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
+                comp = capture(zig_zag(quantize(dct_2d(x), c=c)), values=i)
                 compressed_data.extend(comp)
             compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
             for y in compressed_split:
-                samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)))) + 128
+                samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), c=c)) + 128
                 partitions.append(samples)
-            index = merge_blocks(partitions, int(200/8), int(200/8))
+            index = merge_blocks(partitions, int(sample_area/8), int(sample_area/8))
             metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min())
-            if metric > 0.97 or abs(last_metric - metric) < 0.0000000001:
+            if metric > 0.99 or (abs(last_metric - metric) < 0.0000000001):
                 return i
             last_metric = metric
         return 64
@@ -69,17 +69,15 @@ def compress_image(image, file_name, debug=False):
         YCBCR = rgb2ycbcr(image)
 
     Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], (YCBCR[:, :, 2])[:o_length, :o_width]
-    # Y, Cb, Cr = (YCBCR[:, :, 0])[:512, :512], (YCBCR[:, :, 1])[:512, :512], (YCBCR[:, :, 2])[:512, :512]
 
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
 
-    values_to_keep = SSIM(Y, p_length, p_width)
+    values_to_keep = SSIM(Cr, p_length, p_width, sample_area=SAMPLE_AREA, c=False)
     if values_to_keep % 2 != 0:
         values_to_keep += 1
     print("Number of samples (out of 64) to keep: ", values_to_keep)
 
-    # print("padded image dimensions: ", p_length, p_width); print()
     dimensions = convertBin(p_length, bits=16) + convertBin(p_width, bits=16)
     padding = [p_length - c_length, p_width - c_width]
     p_length = [convertInt(dimensions[:8], bits=8), convertInt(dimensions[8:16], bits=8)]
@@ -101,7 +99,7 @@ def compress_image(image, file_name, debug=False):
 
 
 if __name__ == '__main__':
-    SAMPLE_RATIO = 1
+    SAMPLE_RATIO = 1; SAMPLE_AREA = 200
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=True,
                     help="Image name with path")
