@@ -39,7 +39,7 @@ def compress_image(image, file_name, debug=False):
 
     def SSIM(photo, photo_x, photo_y, sample_area=200, c=False):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
-        grab_x, grab_y = int(photo_x / random.uniform(2, 8)), int(photo_y / random.uniform(2, 8))
+        grab_x, grab_y = int(photo_x / random.uniform(2, 4)), int(photo_y / random.uniform(2, 4))
         original_sample = np.array(photo[grab_x:grab_x + sample_area, grab_y:grab_y + sample_area], dtype=np.int16)
         pbar = tqdm(range(16, 64))
         last_metric = 0
@@ -56,7 +56,7 @@ def compress_image(image, file_name, debug=False):
                 partitions.append(samples)
             index = merge_blocks(partitions, int(sample_area/8), int(sample_area/8))
             metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min())
-            if metric > 0.99 or (abs(last_metric - metric) < 0.0000000001):
+            if metric > 0.99 or abs(last_metric - metric) < 0.0000000001:
                 return i
             last_metric = metric
         return 64
@@ -99,7 +99,7 @@ def compress_image(image, file_name, debug=False):
 
 
 if __name__ == '__main__':
-    SAMPLE_RATIO = 1; SAMPLE_AREA = 200
+    SAMPLE_RATIO = 1; SAMPLE_AREA = 176
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=True,
                     help="Image name with path")
