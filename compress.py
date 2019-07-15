@@ -15,7 +15,7 @@ import os
 import time
 
 
-def compress_image(image, file_name):
+def compress_image(image, file_name, debug=False):
 
     def compress(image, qual=64, count=1, debug=False, c=False):
         image_copy = image.copy().astype(float)
@@ -41,12 +41,11 @@ def compress_image(image, file_name):
         assert photo_x >= 512 or photo_y >= 512, "Photo too small to run SSIM metric, compression diverges"
         grab_x, grab_y = int(photo_x / random.uniform(2, 4)), int(photo_y / random.uniform(2, 4))
         original_sample = np.array(photo[grab_x:grab_x + 200, grab_y:grab_y + 200], dtype=np.int16)
-        pbar = tqdm(range(10, 64))
-        previous_metric = 0
+        pbar = tqdm(range(12, 64))
+        last_metric = 0
         for i in pbar:
-            compressed_data = array.array('b', [])
-            partitions = []
-            pbar.set_description("Running SSIM metric quality, 14 through 64 sampled weights")
+            compressed_data, partitions = array.array('b', []), []
+            pbar.set_description("Running SSIM metric quality, 12 through 64 sampled weights")
             list_of_patches = split(original_sample - 128, 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x))), values=i)
@@ -57,12 +56,9 @@ def compress_image(image, file_name):
                 partitions.append(samples)
             index = merge_blocks(partitions, int(200/8), int(200/8))
             metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min())
-            if i == 1:
-                previous_metric = metric
-            else:
-                if metric > 0.97 or abs(previous_metric - metric) < 0.00001:
-                    return i - 1
-                previous_metric = metric
+            if metric > 0.97 or abs(last_metric - metric) < 0.0000000001:
+                return i
+            last_metric = metric
         return 64
 
     o_length, o_width = image[:, :, 0].shape
@@ -72,8 +68,8 @@ def compress_image(image, file_name):
         pbar.set_description("Converting image sample space RGB -> YCbCr")
         YCBCR = rgb2ycbcr(image)
 
-    Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], \
-                (YCBCR[:, :, 2])[:o_length, :o_width]
+    Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width], (YCBCR[:, :, 2])[:o_length, :o_width]
+    # Y, Cb, Cr = (YCBCR[:, :, 0])[:512, :512], (YCBCR[:, :, 1])[:512, :512], (YCBCR[:, :, 2])[:512, :512]
 
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
@@ -90,9 +86,9 @@ def compress_image(image, file_name):
     p_width = [convertInt(dimensions[16:24], bits=8), convertInt(dimensions[24:32], bits=8)]
     keep = [values_to_keep]
 
-    compressedY = compress(Y, qual=values_to_keep, count=1, debug=False)
-    compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=False, c=True)
-    compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=False, c=True)
+    compressedY = compress(Y, qual=values_to_keep, count=1, debug=debug)
+    compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=debug, c=True)
+    compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=debug, c=True)
 
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
     compressed = dim + compressedY + compressedCb + compressedCr
