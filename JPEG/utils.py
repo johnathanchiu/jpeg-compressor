@@ -50,10 +50,10 @@ def calc_matrix_eight_size(image_layer):
 
 
 # grab top row of 8 by 8 and 0:4
-def capture(image_patch, values=64, c_layer=False):
+def capture(image_patch, values=64, sample_percentage=.8, c=False):
     image_patch = image_patch.astype(np.int16)
-    if c_layer:
-        return image_patch[:int(values * 8 / 10)]
+    if c:
+        return image_patch[:int(values * sample_percentage)]
     return tuple(image_patch[:int(values)])
 
 
@@ -122,7 +122,7 @@ def merge_blocks(input_list, rows, columns):
     return output_matrix
 
 
-def quantize(input, debug=False, c_layer=False):
+def quantize(input, debug=False, c=False):
     if debug: print(input); print()
     q = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
                    [12, 12, 14, 19, 26, 58, 60, 55],
@@ -141,12 +141,12 @@ def quantize(input, debug=False, c_layer=False):
                     [49, 64, 78, 87, 103, 121, 120, 101],
                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
     if debug: print("quantize: ", input / q); print()
-    if c_layer:
+    if c:
         return np.round(input.astype(np.float16) / q_c).astype(np.int8)
     return np.round(input.astype(np.float16) / q).astype(np.int8)
 
 
-def undo_quantize(input, debug=False, c_layer=False):
+def undo_quantize(input, debug=False, c=False):
     if debug: print(input); print()
     q = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
                   [12, 12, 14, 19, 26, 58, 60, 55],
@@ -156,16 +156,16 @@ def undo_quantize(input, debug=False, c_layer=False):
                   [24, 35, 55, 64, 81, 104, 113, 92],
                   [49, 64, 78, 87, 103, 121, 120, 101],
                   [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
-    q_c = np.array([[14, 8, 9, 16, 24, 40, 51, 61],
-                    [10, 12, 14, 19, 26, 58, 60, 55],
-                    [14, 13, 16, 24, 40, 57, 69, 56],
-                    [14, 17, 22, 29, 51, 87, 80, 62],
-                    [18, 22, 37, 56, 68, 109, 103, 77],
-                    [24, 35, 55, 64, 81, 104, 113, 92],
-                    [49, 64, 78, 87, 103, 121, 120, 101],
-                    [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
+    q_c = np.array([[6, 4, 4, 6, 10, 16, 20, 24],
+                    [5, 5, 6, 8, 10, 23, 24, 22],
+                    [6, 5, 6, 10, 16, 23, 28, 22],
+                    [6, 7, 9, 12, 20, 35, 32, 25],
+                    [7, 9, 15, 22, 27, 44, 41, 31],
+                    [10, 14, 22, 26, 32, 42, 45, 37],
+                    [20, 26, 31, 35, 41, 48, 48, 40],
+                    [29, 37, 38, 39, 45, 40, 41, 40]], dtype=np.float16)
     if debug: print("undo quantize: ", input * q); print()
-    if c_layer:
+    if c:
         return input.astype(np.float16) * q_c
     return input.astype(np.float16) * q
 

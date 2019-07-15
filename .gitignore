@@ -11,6 +11,7 @@
 *.jpeg
 *.jpg
 *.png
+*.bmp
 
 # original writer's file used for module testing
 smalltester.py
