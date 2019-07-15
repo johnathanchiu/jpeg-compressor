@@ -67,15 +67,15 @@ def decompress_image(file_name, image_save):
         rgbArray = ycbcr2rgb(np.flip(YCBCR, axis=1))
         rgbArray = rotate(rgbArray, 90)
 
-    imageio.imwrite(image_save, rgbArray)
+    imageio.imwrite(image_save, rgbArray, quality=100)
 
 
 if __name__ == '__main__':
-    SAMPLE_RATIO = 1
+    SAMPLE_RATIO = 0.8
     ap = argparse.ArgumentParser()
-    ap.add_argument('-c', "--compressed", required=True, help="compressed file name with path & extension")
+    ap.add_argument('-c', "--compressed", required=False, default='./IMG_0846.bz2', help="compressed file name with path & extension")
     ap.add_argument('-d', "--decompressed", default='./', help="path to file for decompressed image")
-    ap.add_argument('-i', "--iden", default='n', help="Y/y for decompressed jpg")
+    ap.add_argument('-i', "--iden", default='y', help="Y/y for decompressed jpg")
     args = ap.parse_args()
     compressed_file, decompressed_image = args.compressed, args.decompressed
     _, tail = os.path.split(compressed_file)

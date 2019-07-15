@@ -1,5 +1,4 @@
-from scipy import fftpack
-from scipy import *
+from scipy.fftpack import dct, idct
 import numpy as np
 import array
 
@@ -99,17 +98,21 @@ def zig_zag_reverse(input_matrix, block_size=8, debug=False):
 
 
 def dct_2d(image, debug=False):
-    if debug: print(image); print()
+    if debug: print("image patch before dct: ", image); print()
     image.astype(float)
-    if debug: print("dct: ", np.round(fftpack.dct(fftpack.dct(image.T, norm='ortho').T, norm='ortho'))); print()
-    return fftpack.dct(fftpack.dct(image.T, norm='ortho').T, norm='ortho')
+    # if debug: print("dct: ", np.round(fftpack.dct(fftpack.dct(image.T, norm='ortho').T, norm='ortho'))); print()
+    if debug: print("dct: ",  dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
+    # return dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho')
+    return idct(idct(image.T, norm='ortho').T, norm='ortho')
 
 
 def idct_2d(image, debug=False):
-    if debug: print(image); print()
+    if debug: print("image patch before idct: ", image); print()
     image.astype(float)
-    if debug: print("idct: ", fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')); print()
-    return fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')
+    # if debug: print("idct: ", fftpack.idct(fftpack.idct(image.T, norm='ortho').T, norm='ortho')); print()
+    if debug: print("idct: ", idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
+    # return idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho')
+    return idct(idct(image.T, norm='ortho').T, norm='ortho')
 
 
 def merge_blocks(input_list, rows, columns):
@@ -123,26 +126,26 @@ def merge_blocks(input_list, rows, columns):
 
 
 def quantize(input, debug=False, c=False):
-    if debug: print(input); print()
-    """ original quantization table """
-    # q = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
-    #               [12, 12, 14, 19, 26, 58, 60, 55],
-    #               [14, 13, 16, 24, 40, 57, 69, 56],
-    #               [14, 17, 22, 29, 51, 87, 80, 62],
-    #               [18, 22, 37, 56, 68, 109, 103, 77],
-    #               [24, 35, 55, 64, 81, 104, 113, 92],
-    #               [49, 64, 78, 87, 103, 121, 120, 101],
-    #               [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
-    """ Original quantization table halved """
-    q = np.array([[8, 5, 5, 8, 12, 20, 25, 30],
-                  [6, 6, 7, 9, 13, 29, 30, 28],
-                  [7, 7, 8, 12, 20, 28, 34, 28],
+    if debug: print("patch before quantization: ", np.round(input)); print()
+    ''' original quantization table for reference
+    q = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
+                  [12, 12, 14, 19, 26, 58, 60, 55],
+                  [14, 13, 16, 24, 40, 57, 69, 56],
+                  [14, 17, 22, 29, 51, 87, 80, 62],
+                  [18, 22, 37, 56, 68, 109, 103, 77],
+                  [24, 35, 55, 64, 81, 104, 113, 92],
+                  [49, 64, 78, 87, 103, 121, 120, 101],
+                  [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16) 
+    '''
+    q = np.array([[9, 2, 3, 3, 12, 20, 25, 30],
+                  [2, 2, 5, 9, 13, 29, 30, 28],
+                  [4, 7, 8, 12, 20, 28, 34, 28],
                   [7, 8, 11, 14, 25, 43, 40, 31],
                   [9, 11, 18, 28, 34, 51, 50, 39],
                   [12, 17, 27, 32, 40, 50, 55, 46],
                   [24, 32, 39, 43, 50, 60, 60, 51],
                   [36, 46, 47, 49, 52, 50, 51, 49]], dtype=np.float16)
-    q_c = np.array([[8, 5, 5, 8, 6, 10, 12, 15],
+    q_c = np.array([[11, 5, 5, 8, 6, 10, 12, 15],
                     [6, 6, 7, 9, 6, 14, 15, 14],
                     [7, 7, 8, 6, 10, 14, 17, 14],
                     [7, 8, 6, 7, 12, 22, 20, 16],
@@ -150,23 +153,23 @@ def quantize(input, debug=False, c=False):
                     [6, 8, 14, 16, 20, 25, 27, 23],
                     [12, 16, 19, 22, 25, 30, 30, 25],
                     [18, 23, 23, 29, 26, 50, 25, 29]], dtype=np.float16)
-    if debug: print("quantize: ", input / q); print()
+    if debug: print("quantize: ", input.astype(np.float16) / q); print()
     if c:
         return np.round(input.astype(np.float16) / q_c).astype(np.int8)
     return np.round(input.astype(np.float16) / q).astype(np.int8)
 
 
 def undo_quantize(input, debug=False, c=False):
-    if debug: print(input); print()
-    q = np.array([[8, 5, 5, 8, 12, 20, 25, 30],
-                  [6, 6, 7, 9, 13, 29, 30, 28],
-                  [7, 7, 8, 12, 20, 28, 34, 28],
+    if debug: print("patch before undo quantize: ", input); print()
+    q = np.array([[9, 2, 3, 3, 12, 20, 25, 30],
+                  [2, 2, 5, 9, 13, 29, 30, 28],
+                  [4, 7, 8, 12, 20, 28, 34, 28],
                   [7, 8, 11, 14, 25, 43, 40, 31],
                   [9, 11, 18, 28, 34, 51, 50, 39],
                   [12, 17, 27, 32, 40, 50, 55, 46],
                   [24, 32, 39, 43, 50, 60, 60, 51],
                   [36, 46, 47, 49, 52, 50, 51, 49]], dtype=np.float16)
-    q_c = np.array([[8, 5, 5, 8, 6, 10, 12, 15],
+    q_c = np.array([[11, 5, 5, 8, 6, 10, 12, 15],
                     [6, 6, 7, 9, 6, 14, 15, 14],
                     [7, 7, 8, 6, 10, 14, 17, 14],
                     [7, 8, 6, 7, 12, 22, 20, 16],
@@ -174,7 +177,7 @@ def undo_quantize(input, debug=False, c=False):
                     [6, 8, 14, 16, 20, 25, 27, 23],
                     [12, 16, 19, 22, 25, 30, 30, 25],
                     [18, 23, 23, 29, 26, 50, 25, 29]], dtype=np.float16)
-    if debug: print("undo quantize: ", input * q); print()
+    if debug: print("undo quantize: ", input.astype(np.float16) * q); print()
     if c:
         return input.astype(np.float16) * q_c
     return input.astype(np.float16) * q
