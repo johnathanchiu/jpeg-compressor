@@ -65,9 +65,10 @@ def decompress_image(file_name, image_save):
         pbar_2.set_description("Converting image sample space YCbCr -> RGB")
         YCBCR = np.array([newY[0:length, 0:width], newCb[0:length, 0:width], newCr[0:length, 0:width]]).T
         rgbArray = ycbcr2rgb(np.flip(YCBCR, axis=1))
-        rgbArray = rotate(rgbArray, 90)
+        rgbArray = rotate(rgbArray, 90) + 2
+        rgbArray[rgbArray > 255] = 255
 
-    imageio.imwrite(image_save, rgbArray+2, quality=100)
+    imageio.imwrite(image_save, rgbArray, quality=100)
 
 
 if __name__ == '__main__':
