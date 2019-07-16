@@ -67,7 +67,7 @@ def compress_image(image, file_name, debug=False):
                     return i, metric
             rep += 1
             if rep == 4: last_metric = metric; rep = 0
-        if metric < 0.90:
+        if metric < 0.92:
             return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c, resample=True)
         return 64, metric
 
@@ -121,7 +121,7 @@ def compress_image(image, file_name, debug=False):
 
 if __name__ == '__main__':
     DEBUG = False
-    SAMPLE_RATIO = 1; SAMPLE_AREA = 216
+    SAMPLE_RATIO = 0.8; SAMPLE_AREA = 216
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=True, help="Image name with path")
     ap.add_argument('-c', "--compressed", default='./', help="Folder to save compressed file")
