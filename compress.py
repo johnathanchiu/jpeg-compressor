@@ -38,15 +38,15 @@ def compress_image(image, file_name, debug=False):
         return compressed_data
 
     def SSIM(photo, photo_x, photo_y, sample_area=200, c=False, debug=False, resample=False):
-        if resample: print("Resampling with new area, previous patch was bad")
+        if resample: print(); print("Resampling with new area, previous patch was bad")
         assert photo_x >= 128 or photo_y >= 128, "Photo too small to run SSIM metric, compression diverges"
-        grab_x, grab_y = int(photo_x // random.uniform(2, 5)), int(photo_y // random.uniform(2, 5))
+        grab_x, grab_y = int(photo_x // random.uniform(2, 4)), int(photo_y // random.uniform(2, 4))
         original_sample = np.array(photo[grab_x:grab_x + sample_area, grab_y:grab_y + sample_area], dtype=np.int16)
-        pbar = tqdm(range(10, 64))
+        pbar = tqdm(range(6, 64))
         last_metric, rep = 0, 0
         for i in pbar:
             compressed_data, partitions = array.array('b', []), []
-            pbar.set_description("Running SSIM metric quality, 10 through 64 sampled weights")
+            pbar.set_description("Running SSIM metric quality, 6 through 64 sampled weights")
             list_of_patches = split((original_sample.copy() - 128).astype(np.int8), 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x), c=c)), values=i)
@@ -63,11 +63,12 @@ def compress_image(image, file_name, debug=False):
             if metric > 0.97:
                 return i, metric
             if abs(last_metric - metric) < 0.0000000001:
-                if metric > 0.93:
+                if metric > 0.92:
                     return i, metric
-                return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c,  resample=True)
             rep += 1
             if rep == 4: last_metric = metric; rep = 0
+        if metric < 0.90:
+            return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c, resample=True)
         return 64, metric
 
     o_length, o_width = image[:, :, 0].shape
