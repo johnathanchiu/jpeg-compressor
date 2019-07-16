@@ -95,18 +95,18 @@ if __name__ == '__main__':
     SAMPLE_AREA = 128; SAMPLE_RATIO = 1
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--images", required=True,
-                    help="image folder without trailing '/'")
+                    help="image folder")
     ap.add_argument("-c", "--compressed", required=True,
-                    help="compressed file without trailing '/'")
+                    help="compressed folder")
     args = ap.parse_args()
     start_time = time.time()
     pbar = tqdm(os.listdir(args.images))
     for file in pbar:
         pbar.set_description("running compressor on all images in folder")
         filename = os.fsdecode(file)
-        resulting_file = args.compressed + '/' + os.path.splitext(filename)[0]
+        resulting_file = args.compressed + os.path.splitext(filename)[0]
         if filename.endswith(".jpg") or filename.endswith(".jpeg"):
-            image = imageio.imread(args.images+'/'+filename)
+            image = imageio.imread(args.images + filename)
             compress_image(image, resulting_file)
     print("--- %s seconds ---" % (time.time() - start_time))
 
