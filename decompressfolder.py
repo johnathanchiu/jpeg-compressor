@@ -61,7 +61,7 @@ if __name__ == '__main__':
                     help="decompressed folder")
     args = ap.parse_args()
     start_time = time.time()
-    pbar = tqdm(os.listdir(args.directory))
+    pbar = tqdm(os.listdir(args.compressed))
     for file in pbar:
         pbar.set_description("running decompressor on all images in folder")
         filename = os.fsdecode(file)
