@@ -27,15 +27,15 @@ def decompress_image(file_name, image_save):
             for x in pbar:
                 descrip = "Running modified jpeg decompression " + str(count) + " / 3"
                 pbar.set_description(descrip)
-                append(idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), c=c)))
+                append((idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), c=c)) + 128).astype(np.uint8))
         if debug: print(image_partitions); print()
         pbar_2 = tqdm(range(1))
         for _ in pbar_2:
             pbar_2.set_description("Merging blocks back to form whole image")
             image = merge_blocks(image_partitions, dimx, dimy)
         if debug: print(image); print()
-        if debug: print("image: ", np.round(image + 128))
-        return image + 128
+        if debug: print("image: ", np.round(image))
+        return image
 
     pbar_1 = tqdm(range(1))
     for _ in pbar_1:
@@ -71,7 +71,7 @@ def decompress_image(file_name, image_save):
 
 
 if __name__ == '__main__':
-    SAMPLE_RATIO = 0.8
+    SAMPLE_RATIO = 1
     ap = argparse.ArgumentParser()
     ap.add_argument('-c', "--compressed", required=False, default='./IMG_0846.bz2', help="compressed file name with path & extension")
     ap.add_argument('-d', "--decompressed", default='./', help="path to file for decompressed image")

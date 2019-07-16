@@ -7,6 +7,7 @@ from skimage.measure._structural_similarity import compare_ssim as ssim
 from tqdm import tqdm
 import argparse
 import random
+import math
 
 import imageio
 import array
@@ -32,22 +33,20 @@ def compress_image(image, file_name, debug=False):
             for x in pbar:
                 descrip = "Running modified jpeg compression " + str(count) + " / 3"
                 pbar.set_description(descrip)
-                ext((capture(zig_zag(quantize(dct_2d(x), c=c)), values=qual, sample_percentage=SAMPLE_RATIO,
-                             c=c)))
+                ext((capture(zig_zag(quantize(dct_2d(x), c=c)), values=qual, sample_percentage=SAMPLE_RATIO, c=c)))
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
-    def SSIM(photo, photo_x, photo_y, sample_area=200, c=False):
+    def SSIM(photo, photo_x, photo_y, sample_area=200, c=False, debug=False):
         assert photo_x >= 128 or photo_y >= 128, "Photo too small to run SSIM metric, compression diverges"
         grab_x, grab_y = int(photo_x / random.uniform(2, 6)), int(photo_y / random.uniform(2, 6))
         original_sample = np.array(photo[grab_x:grab_x + sample_area, grab_y:grab_y + sample_area], dtype=np.int16)
-        # pbar = tqdm(range(16, 64))
-        pbar = range(16, 64)
+        pbar = tqdm(range(2, 64))
         last_metric, rep = 0, 0
         for i in pbar:
             compressed_data, partitions = array.array('b', []), []
-            # pbar.set_description("Running SSIM metric quality, 16 through 64 sampled weights")
-            list_of_patches = split(original_sample.copy() - 128, 8, 8)
+            pbar.set_description("Running SSIM metric quality, 2 through 64 sampled weights")
+            list_of_patches = split((original_sample.copy() - 128).astype(np.int8), 8, 8)
             for x in list_of_patches:
                 comp = capture(zig_zag(quantize(dct_2d(x), c=c)), values=i)
                 compressed_data.extend(comp)
@@ -55,14 +54,18 @@ def compress_image(image, file_name, debug=False):
             for y in compressed_split:
                 samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), c=c)) + 128
                 partitions.append(samples)
-            index = merge_blocks(partitions, int(sample_area/8), int(sample_area/8))
-            metric = ssim(original_sample.flatten(), index.flatten(), data_range=index.max() - index.min())
-            print(metric)
-            if metric > 0.96 or abs(last_metric - metric) < 0.0000000001:
-                return i
+            index = merge_blocks(partitions, int(sample_area/8), int(sample_area/8)).astype(np.uint8)
+            metric = ssim(original_sample, index, data_range=index.max() - index.min())
+            if debug: print((0 <= index).all() and (index <= 255).all()); print(metric)
+            if math.isnan(metric): return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c)
+            if metric > 0.94: return i, metric
+            if abs(last_metric - metric) < 0.0000000001:
+                if metric > 0.85:
+                    return i - rep, metric
+                return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c)
             rep += 1
-            if rep == 2: last_metric = metric; rep = 0
-        return 64
+            if rep == 4: last_metric = metric; rep = 0
+        return 64, metric
 
     o_length, o_width = image[:, :, 0].shape
 
@@ -74,21 +77,23 @@ def compress_image(image, file_name, debug=False):
     Y, Cb, Cr = (YCBCR[:, :, 0])[:o_length, :o_width], (YCBCR[:, :, 1])[:o_length, :o_width],\
                 (YCBCR[:, :, 2])[:o_length, :o_width]
 
-    ''' debugging purposes '''
-    # rand, randw  = np.random.randint(o_length-8), np.random.randint(o_width-8)
-    # Y, Cb, Cr = (YCBCR[:, :, 0])[rand:rand + 64, randw:randw + 64], \
-    #             (YCBCR[:, :, 1])[rand:rand + 64, randw:randw + 64], \
-    #             (YCBCR[:, :, 2])[rand:rand + 64, randw:randw + 64]
+    ''' line(s) below are for debugging '''
+    # debug_grab = 8
+    # randl, randw = np.random.randint(o_length-8), np.random.randint(o_width-8)
+    # randl, randw = 1876, 1176
+    # Y, Cb, Cr = (YCBCR[:, :, 0])[randl:randl + debug_grab, randw:randw + debug_grab], \
+    #             (YCBCR[:, :, 1])[randl:randl + debug_grab, randw:randw + debug_grab], \
+    #             (YCBCR[:, :, 2])[randl:randl + debug_grab, randw:randw + debug_grab]
 
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
 
-    values_to_keep = SSIM(Cr, p_length, p_width, sample_area=SAMPLE_AREA, c=False)
-    # line below is for debugging
-    # values_to_keep = SSIM(Cr, p_length, p_width, sample_area=SAMPLE_AREA, c=False)
+    values_to_keep, metric = SSIM(Cr, p_length, p_width, sample_area=SAMPLE_AREA, c=False, debug=debug)
+    ''' line below is for debugging '''
+    # values_to_keep, metric = 64, 1
     if values_to_keep % 2 != 0:
         values_to_keep += 1
-    print("Number of samples (out of 64) to keep: ", values_to_keep)
+    print("Number of samples (out of 64) to keep at metric " + str(metric) + ": ", values_to_keep)
 
     dimensions = convertBin(p_length, bits=16) + convertBin(p_width, bits=16)
     padding = [p_length - c_length, p_width - c_width]
@@ -111,7 +116,7 @@ def compress_image(image, file_name, debug=False):
 
 
 if __name__ == '__main__':
-    SAMPLE_RATIO = 0.8; SAMPLE_AREA = 176
+    SAMPLE_RATIO = 1; SAMPLE_AREA = 200
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=False,
                     help="Image name with path", default="/Users/johnathanchiu/Documents/CompressionPics/tests/IMG_0846.jpeg")
