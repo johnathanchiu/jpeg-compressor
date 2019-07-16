@@ -18,17 +18,16 @@ def decompress_image(file_name, image_save):
         compressed_split = np.array([np.array(input[i:i+qual], dtype=np.int8)
                                      for i in range(0, len(input), qual)], dtype=np.int8)
         image_partitions = []; append = image_partitions.append
-        pbar = tqdm(compressed_split)
         if debug: print(compressed_split); print()
         if debug:
             for x in compressed_split:
                 append(idct_2d(undo_quantize(zig_zag_reverse(rebuild(x), debug=True),
                                              debug=True, table=table), debug=True))
         else:
-            for x in pbar:
-                descrip = "Running modified jpeg decompression " + str(count) + " / 3"
-                pbar.set_description(descrip)
-                append((idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), table=table)) + 128).astype(np.uint8))
+            pbar = tqdm(compressed_split)
+            descrip = "Running modified jpeg decompression " + str(count) + " / 3"
+            pbar.set_description(descrip)
+            [append((idct_2d(undo_quantize(zig_zag_reverse(rebuild(x)), table=table)) + 128).astype(np.uint8)) for x in pbar]
         if debug: print(image_partitions); print()
         pbar_2 = tqdm(range(1))
         for _ in pbar_2:

@@ -30,10 +30,9 @@ def compress_image(image, file_name, debug=False):
                              values=qual, sample_percentage=sampratio)))
         else:
             pbar = tqdm(list_of_patches)
-            for x in pbar:
-                descrip = "Running modified jpeg compression " + str(count) + " / 3"
-                pbar.set_description(descrip)
-                ext((capture(zig_zag(quantize(dct_2d(x), table=table)), values=qual, sample_percentage=sampratio)))
+            descrip = "Running modified jpeg compression " + str(count) + " / 3"
+            pbar.set_description(descrip)
+            [ext((capture(zig_zag(quantize(dct_2d(x), table=table)), values=qual, sample_percentage=sampratio))) for x in pbar]
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
@@ -48,15 +47,12 @@ def compress_image(image, file_name, debug=False):
         last_metric, rep = 0, 0
         for i in pbar:
             compressed_data, partitions = array.array('b', []), []
+            ext = compressed_data.extend; app = partitions.append
             if not debug: pbar.set_description("Running SSIM metric quality, 8 through 64 sampled weights")
             list_of_patches = split((original_sample.copy() - 128).astype(np.int8), 8, 8)
-            for x in list_of_patches:
-                comp = capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)
-                compressed_data.extend(comp)
+            [ext(capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)) for x in list_of_patches]
             compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
-            for y in compressed_split:
-                samples = (idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128).astype(np.uint8)
-                partitions.append(samples)
+            [app(idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128) for y in compressed_split]
             index = merge_blocks(partitions, int(area/8), int(area/8)).astype(np.uint8)
             metric = ssim(original_sample, index, data_range=index.max() - index.min())
             if debug: print(metric)

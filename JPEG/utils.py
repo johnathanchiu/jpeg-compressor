@@ -129,19 +129,18 @@ def zig_zag_reverse(input_matrix, block_size=8, debug=False):
 def dct_2d(image, debug=False):
     if debug: print("image patch before dct: ", image); print()
     image.astype(float)
-    # if debug: print("dct: ",  dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
-    # return dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho')
-    if debug: print("dct: ", np.round(dct(dct(image.T, norm='ortho').T, norm='ortho'))); print()
-    return dct(dct(image.T, norm='ortho').T, norm='ortho')
+    # if debug: print("dct: ", np.round(dct(dct(image.T, norm='ortho').T, norm='ortho'))); print()
+    # return dct(dct(image.T, norm='ortho').T, norm='ortho')
+    if debug: print("dct: ",  dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
+    return dct(dct(image, axis=0, norm='ortho'), axis=1, norm='ortho')
 
 
 def idct_2d(image, debug=False):
     if debug: print("image patch before idct: ", image); print()
-    image.astype(float)
-    # if debug: print("idct: ", idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
-    # inversed = np.round(idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
-    if debug: print("idct: ", np.round(idct(idct(image.T, norm='ortho').T, norm='ortho'))); print()
-    inversed = np.round(idct(idct(image.T, norm='ortho').T, norm='ortho'))
+    # if debug: print("idct: ", np.round(idct(idct(image.T, norm='ortho').T, norm='ortho'))); print()
+    # inversed = np.round(idct(idct(image.T, norm='ortho').T, norm='ortho'))
+    if debug: print("idct: ", idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
+    inversed = np.round(idct(idct(image, axis=0, norm='ortho'), axis=1, norm='ortho'))
     inversed[inversed > 127] = 127; inversed[inversed < -128] = -128
     return inversed
 
@@ -159,15 +158,16 @@ def merge_blocks(input_list, rows, columns):
 def quantize(quant, table=ORGQUANT, debug=False):
     if debug:
         print("patch before quantization: ", np.round(quant)); print();
-        print("quantize: ", (quant.astype(np.float16) / table).astype(np.int16)); print()
-    quantized = np.round(quant.astype(np.float16) / table)
+        print("quantize: ", (quant / table).astype(np.int16)); print()
+    quantized = np.round(quant / table)
     quantized[quantized > 127] = 127; quantized[quantized < -128] = -128
     return quantized.astype(np.int8)
 
 
 def undo_quantize(quant, table=ORGQUANT, debug=False):
-    if debug: print("patch before undo quantize: ", quant); print()
-    if debug: print("undo quantize: ", quant.astype(np.float16) * table); print()
-    return quant.astype(np.float16) * table
+    if debug:
+        print("patch before undo quantize: ", quant); print()
+        print("undo quantize: ", quant.astype(np.float16) * table); print()
+    return quant.astype(float) * table
 
 
