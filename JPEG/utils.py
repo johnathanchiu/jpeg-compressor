@@ -140,9 +140,9 @@ def quantize(input, c=False, debug=False):
                   [49, 64, 78, 87, 103, 121, 120, 101],
                   [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16) 
     '''
-    q = np.array([[9, 3, 2, 2, 5, 6, 6, 6],
-                  [4, 3, 3, 4, 4, 7, 7, 7],
-                  [4, 5, 11, 13, 7, 12, 14, 14],
+    q = np.array([[9, 3, 4, 4, 5, 6, 6, 6],
+                  [2, 3, 3, 4, 4, 7, 7, 7],
+                  [3, 5, 11, 13, 7, 12, 14, 14],
                   [5, 8, 10, 27, 32, 42, 43, 36],
                   [10, 20, 43, 40, 64, 53, 45, 54],
                   [30, 53, 39, 39, 56, 64, 64, 64],
@@ -158,19 +158,19 @@ def quantize(input, c=False, debug=False):
                     [57, 57, 57, 57, 57, 57, 57, 57]], dtype=np.float16)
     if debug: print("quantize: ", (input.astype(np.float16) / q).astype(np.int16)); print()
     if c:
-        quantized = input.astype(np.float16) / q_c
+        quantized = np.round(input.astype(np.float16) / q_c)
         quantized[quantized > 127] = 127; quantized[quantized < -128] = -128
         return quantized.astype(np.int8)
-    quantized = input.astype(np.float16) / q
+    quantized = np.round(input.astype(np.float16) / q)
     quantized[quantized > 127] = 127; quantized[quantized < -128] = -128
     return quantized.astype(np.int8)
 
 
 def undo_quantize(input, c=False, debug=False):
     if debug: print("patch before undo quantize: ", input); print()
-    q = np.array([[9, 3, 2, 2, 5, 6, 6, 6],
-                  [4, 3, 3, 4, 4, 7, 7, 7],
-                  [4, 5, 11, 13, 7, 12, 14, 14],
+    q = np.array([[9, 3, 4, 4, 5, 6, 6, 6],
+                  [2, 3, 3, 4, 4, 7, 7, 7],
+                  [3, 5, 11, 13, 7, 12, 14, 14],
                   [5, 8, 10, 27, 32, 42, 43, 36],
                   [10, 20, 43, 40, 64, 53, 45, 54],
                   [30, 53, 39, 39, 56, 64, 64, 64],
