@@ -63,7 +63,7 @@ def decompress_image(file_name, image_save):
     pbar_2 = tqdm(range(1))
     for _ in pbar_2:
         pbar_2.set_description("Converting image sample space YCbCr -> RGB")
-        YCBCR = np.array([newY[0:length, 0:width], newCb[0:length, 0:width]+1, newCr[0:length, 0:width]+1]).T
+        YCBCR = np.array([newY[0:length, 0:width], newCb[0:length, 0:width]+2, newCr[0:length, 0:width]+2]).T
         rgbArray = ycbcr2rgb(np.flip(YCBCR, axis=1))
         rgbArray = rotate(rgbArray, 90)
 
