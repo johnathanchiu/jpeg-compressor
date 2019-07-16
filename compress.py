@@ -18,7 +18,7 @@ import time
 
 def compress_image(image, file_name, debug=False):
 
-    def compress(image, qual=64, count=1, debug=False, c=False):
+    def compress(image, qual=64, sampratio=1.0, table=QUANTIZATIONTABLE, count=1, debug=False):
         image_copy = image.copy().astype(np.int16)
         compressed_data = array.array('b', [])
         ext = compressed_data.extend
@@ -26,50 +26,54 @@ def compress_image(image, file_name, debug=False):
         list_of_patches = split((matrix_multiple_of_eight(image_copy - 128)).astype(np.int8), 8, 8)
         if debug:
             for x in list_of_patches:
-                ext((capture(zig_zag(quantize(dct_2d(x, debug=True), debug=True, c=c), debug=True),
-                             values=qual, sample_percentage=SAMPLE_RATIO, c=c)))
+                ext((capture(zig_zag(quantize(dct_2d(x, debug=True), table=table, debug=True), debug=True),
+                             values=qual, sample_percentage=sampratio)))
         else:
             pbar = tqdm(list_of_patches)
             for x in pbar:
                 descrip = "Running modified jpeg compression " + str(count) + " / 3"
                 pbar.set_description(descrip)
-                ext((capture(zig_zag(quantize(dct_2d(x), c=c)), values=qual, sample_percentage=SAMPLE_RATIO, c=c)))
+                ext((capture(zig_zag(quantize(dct_2d(x), table=table)), values=qual, sample_percentage=sampratio)))
         if debug: print("compressed data: ", compressed_data); print()
         return compressed_data
 
-    def SSIM(photo, photo_x, photo_y, sample_area=200, c=False, debug=False, resample=False):
+    def SSIM(photo, photo_x, photo_y, area=200, table=QUANTIZATIONTABLE, resample=False, debug=False):
         if resample: print(); print("Resampling with new area, previous patch was bad")
-        assert photo_x >= 128 or photo_y >= 128, "Photo too small to run SSIM metric, compression diverges"
+        assert photo_x >= 64 or photo_y >= 64, "Photo too small to run SSIM metric, compression diverges"
+        assert area % 8 == 0, "Invalid sampling area make sure sample area is equally divisible by 8"
         grab_x, grab_y = int(photo_x // random.uniform(1.5, 4)), int(photo_y // random.uniform(1.5, 4))
-        original_sample = np.array(photo[grab_x:grab_x + sample_area, grab_y:grab_y + sample_area], dtype=np.int16)
+        original_sample = np.array(photo[grab_x:grab_x + area, grab_y:grab_y + area], dtype=np.int16)
         pbar = tqdm(range(8, 64))
+        if debug: pbar = range(8, 64)
         last_metric, rep = 0, 0
         for i in pbar:
             compressed_data, partitions = array.array('b', []), []
-            pbar.set_description("Running SSIM metric quality, 8 through 64 sampled weights")
+            if not debug: pbar.set_description("Running SSIM metric quality, 8 through 64 sampled weights")
             list_of_patches = split((original_sample.copy() - 128).astype(np.int8), 8, 8)
             for x in list_of_patches:
-                comp = capture(zig_zag(quantize(dct_2d(x), c=c)), values=i)
+                comp = capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)
                 compressed_data.extend(comp)
             compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
             for y in compressed_split:
-                samples = idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), c=c)) + 128
+                samples = (idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128).astype(np.uint8)
                 partitions.append(samples)
-            index = merge_blocks(partitions, int(sample_area/8), int(sample_area/8)).astype(np.uint8)
+            index = merge_blocks(partitions, int(area/8), int(area/8)).astype(np.uint8)
             metric = ssim(original_sample, index, data_range=index.max() - index.min())
-            if debug: print((0 <= index).all() and (index <= 255).all()); print(metric)
-            if math.isnan(metric):
-                return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c, resample=True)
-            if metric > 0.97:
-                return i, metric
+            if debug: print(metric)
+            if math.isnan(metric): return SSIM(photo, photo_x, photo_y, area=area, resample=True, debug=debug)
+            if metric < 0.7:
+                return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.1), resample=True, debug=debug)
+            if metric > 0.975: return i, metric, table
             if abs(last_metric - metric) < 0.0000000001:
                 if metric > 0.93:
-                    return i, metric
+                    return i - rep, metric, table
+                return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.1), resample=True, debug=debug)
             rep += 1
-            if rep == 4: last_metric = metric; rep = 0
-        if metric < 0.92:
-            return SSIM(photo, photo_x, photo_y, sample_area=sample_area, c=c, resample=True)
-        return 64, metric
+            if rep == 5: last_metric = metric; rep = 0
+        if metric < 0.93:
+            if debug: print('recompiling quantization table')
+            return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.2), resample=True, debug=debug)
+        return 64, metric, table
 
     o_length, o_width = image[:, :, 0].shape
 
@@ -92,7 +96,9 @@ def compress_image(image, file_name, debug=False):
     c_length, c_width = Y.shape
     p_length, p_width = calc_matrix_eight_size(Y)
 
-    values_to_keep, metric = SSIM(Cr, p_length, p_width, sample_area=SAMPLE_AREA, c=False, debug=debug)
+    values_to_keep, metric, quant = SSIM(Cr, p_length, p_width, area=SAMPLE_AREA, table=QUANTIZATIONTABLE, debug=DEBUG)
+    if quant[0][0] < 8: quant[0][0] = 8
+    if debug: print("quantization table:"); print(quant)
     ''' line below is for debugging '''
     if debug: values_to_keep, metric = 64, 1
     if values_to_keep % 2 != 0:
@@ -105,12 +111,17 @@ def compress_image(image, file_name, debug=False):
     p_width = [convertInt(dimensions[16:24], bits=8), convertInt(dimensions[24:32], bits=8)]
     keep = [values_to_keep]
 
-    compressedY = compress(Y, qual=values_to_keep, count=1, debug=debug)
-    compressedCb = compress(Cb, qual=values_to_keep, count=2, debug=debug, c=True)
-    compressedCr = compress(Cr, qual=values_to_keep, count=3, debug=debug, c=True)
+    compressedY = compress(Y, qual=values_to_keep, table=quant, count=1, debug=debug)
+    compressedCb = compress(Cb, qual=values_to_keep, sampratio=SAMPLE_RATIO,
+                            table=CHROMQUANTIZATIONTABLE, count=2, debug=debug)
+    compressedCr = compress(Cr, qual=values_to_keep, sampratio=SAMPLE_RATIO,
+                            table=CHROMQUANTIZATIONTABLE, count=3, debug=debug)
+
+    q, qc = quant.flatten(), CHROMQUANTIZATIONTABLE.flatten()
+    quantization_tables = array.array('b', q) + array.array('b', qc)
 
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
-    compressed = dim + compressedY + compressedCb + compressedCr
+    compressed = quantization_tables + dim + compressedY + compressedCb + compressedCr
     pbar = tqdm(range(1))
     for _ in pbar:
         pbar.set_description("writing file with entropy compressor")
@@ -121,7 +132,7 @@ def compress_image(image, file_name, debug=False):
 
 if __name__ == '__main__':
     DEBUG = False
-    SAMPLE_RATIO = 0.8; SAMPLE_AREA = 200
+    SAMPLE_RATIO = 1; SAMPLE_AREA = 152
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', "--image", required=True, help="Image name with path")
     ap.add_argument('-c', "--compressed", default='./', help="Folder to save compressed file")

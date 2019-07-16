@@ -1,6 +1,34 @@
 from scipy.fftpack import dct, idct
 import numpy as np
-import array
+
+
+''' original quantization table for reference '''
+ORGQUANT = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
+                     [12, 12, 14, 19, 26, 58, 60, 55],
+                     [14, 13, 16, 24, 40, 57, 69, 56],
+                     [14, 17, 22, 29, 51, 87, 80, 62],
+                     [18, 22, 37, 56, 68, 109, 103, 77],
+                     [24, 35, 55, 64, 81, 104, 113, 92],
+                     [49, 64, 78, 87, 103, 121, 120, 101],
+                     [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16)
+
+QUANTIZATIONTABLE = np.array([[11,  8,  8, 11, 11, 10, 16, 10],
+                              [11, 16, 13, 16, 16, 16,  7, 28],
+                              [13, 13, 13, 13,  7, 22, 14, 14],
+                              [8, 28, 32, 36, 32, 42, 43, 36],
+                              [43, 43, 43, 40, 64, 53, 45, 54],
+                              [53, 53, 39, 39, 56, 64, 64, 64],
+                              [64, 75, 75, 74, 74, 43, 54, 79],
+                              [80, 80, 70, 80, 60, 60, 80, 69]],  dtype=np.float16)
+
+CHROMQUANTIZATIONTABLE = np.array([[12, 13, 13, 18, 15, 15, 21, 13],
+                                   [15, 21, 57, 39, 29, 40, 57, 57],
+                                   [57, 57, 57, 57, 57, 57, 57, 57],
+                                   [57, 57, 69, 57, 57, 67, 70, 57],
+                                   [69, 57, 57, 57, 69, 70, 70, 57],
+                                   [70, 70, 69, 57, 57, 57, 70, 69],
+                                   [57, 70, 57, 57, 57, 57, 57, 57],
+                                   [57, 57, 57, 57, 57, 57, 57, 57]], dtype=np.float16)
 
 
 def split(matrix, nrows, ncols):
@@ -50,9 +78,9 @@ def calc_matrix_eight_size(image_layer):
 
 
 # grab top row of 8 by 8 and 0:4
-def capture(image_patch, values=64, sample_percentage=.8, c=False):
+def capture(image_patch, values=64, sample_percentage=1):
     image_patch = image_patch.astype(np.int16)
-    if c:
+    if sample_percentage != 1:
         return image_patch[:int(values * sample_percentage)]
     return tuple(image_patch[:int(values)])
 
@@ -128,65 +156,18 @@ def merge_blocks(input_list, rows, columns):
     return output_matrix
 
 
-def quantize(input, c=False, debug=False):
-    if debug: print("patch before quantization: ", np.round(input)); print()
-    ''' original quantization table for reference
-    q = np.array([[16, 11, 10, 16, 24, 40, 51, 61],
-                  [12, 12, 14, 19, 26, 58, 60, 55],
-                  [14, 13, 16, 24, 40, 57, 69, 56],
-                  [14, 17, 22, 29, 51, 87, 80, 62],
-                  [18, 22, 37, 56, 68, 109, 103, 77],
-                  [24, 35, 55, 64, 81, 104, 113, 92],
-                  [49, 64, 78, 87, 103, 121, 120, 101],
-                  [72, 92, 95, 98, 112, 100, 103, 99]], dtype=np.float16) 
-    '''
-    q = np.array([[11, 8, 8, 11, 11, 10, 16, 10],
-                  [11, 16, 13, 16, 16, 16, 7, 28],
-                  [13, 13, 13, 13, 7, 22, 14, 14],
-                  [8, 28, 32, 36, 32, 42, 43, 36],
-                  [43, 43, 43, 40, 64, 53, 45, 54],
-                  [53, 53, 39, 39, 56, 64, 64, 64],
-                  [64, 75, 75, 74, 74, 43, 54, 79],
-                  [80, 80, 70, 80, 60, 60, 80, 69]], dtype=np.float16)
-    q_c = np.array([[12, 13, 13, 18, 16, 18, 21, 13],
-                    [13, 21, 57, 46, 29, 34, 57, 57],
-                    [62, 65, 65, 57, 57, 57, 57, 57],
-                    [57, 57, 69, 57, 57, 57, 69, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57]], dtype=np.float16)
-    if debug: print("quantize: ", (input.astype(np.float16) / q).astype(np.int16)); print()
-    if c:
-        quantized = np.round(input.astype(np.float16) / q_c)
-        quantized[quantized > 127] = 127; quantized[quantized < -128] = -128
-        return quantized.astype(np.int8)
-    quantized = np.round(input.astype(np.float16) / q)
+def quantize(quant, table=ORGQUANT, debug=False):
+    if debug:
+        print("patch before quantization: ", np.round(quant)); print();
+        print("quantize: ", (quant.astype(np.float16) / table).astype(np.int16)); print()
+    quantized = np.round(quant.astype(np.float16) / table)
     quantized[quantized > 127] = 127; quantized[quantized < -128] = -128
     return quantized.astype(np.int8)
 
 
-def undo_quantize(input, c=False, debug=False):
-    if debug: print("patch before undo quantize: ", input); print()
-    q = np.array([[11, 8, 8, 11, 11, 10, 16, 10],
-                  [11, 16, 13, 16, 16, 16, 7, 28],
-                  [13, 13, 13, 13, 7, 22, 14, 14],
-                  [8, 28, 32, 36, 32, 42, 43, 36],
-                  [43, 43, 43, 40, 64, 53, 45, 54],
-                  [53, 53, 39, 39, 56, 64, 64, 64],
-                  [64, 75, 75, 74, 74, 43, 54, 79],
-                  [80, 80, 70, 80, 60, 60, 80, 69]], dtype=np.float16)
-    q_c = np.array([[12, 13, 13, 18, 16, 18, 21, 13],
-                    [13, 21, 57, 46, 29, 34, 57, 57],
-                    [62, 65, 65, 57, 57, 57, 57, 57],
-                    [57, 57, 69, 57, 57, 57, 69, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57],
-                    [57, 57, 57, 57, 57, 57, 57, 57]], dtype=np.float16)
-    if debug: print("undo quantize: ", input.astype(np.float16) * q); print()
-    if c:
-        return input.astype(np.float16) * q_c
-    return input.astype(np.float16) * q
+def undo_quantize(quant, table=ORGQUANT, debug=False):
+    if debug: print("patch before undo quantize: ", quant); print()
+    if debug: print("undo quantize: ", quant.astype(np.float16) * table); print()
+    return quant.astype(np.float16) * table
 
 
