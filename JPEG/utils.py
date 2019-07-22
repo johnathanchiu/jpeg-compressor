@@ -82,7 +82,7 @@ def capture(image_patch, values=64, sample_percentage=1):
     image_patch = image_patch.astype(np.int16)
     if sample_percentage != 1:
         return image_patch[:int(values * sample_percentage)]
-    return tuple(image_patch[:int(values)])
+    return image_patch[:int(values)]
 
 
 def rebuild(image):
