@@ -70,3 +70,12 @@ Paper to how the entire algorithm works will be linked soon!
  - numpy (makes matrix mathematics easier)
  - time (timer for length of algorithm)
  - scikit-image (SSIM metric quality)
+
+# ADDITIONAL STATEMENTS (Intellectual Property)
+   
+All work pertaining to the concepts of the modified JPEG algorithm using a weighted SSIM metric to sample values 
+from the image is the intellectual property of the original creator of the algorithm (Johnathan Chiu). All rights to
+redistributing the algorithm in a for-profit use must receive permission granted by the creator of the algorithm. 
+   
+The bz2 algorithm belongs to the original creators and writers. Any portion of the code which contains bz2 entropy 
+encoding is licensed under the original bz2 license (https://github.com/python/cpython/blob/master/LICENSE).
