@@ -71,7 +71,7 @@ Paper to how the entire algorithm works will be linked soon!
  - time (timer for length of algorithm)
  - scikit-image (SSIM metric quality)
 
-# ADDITIONAL STATEMENTS (Intellectual Property)
+# Additional Statements (Intellectual Property)
    
 All work pertaining to the concepts of the modified JPEG algorithm using a weighted SSIM metric to sample values 
 from the image is the intellectual property of the original creator of the algorithm (Johnathan Chiu). All rights to
