@@ -3,24 +3,22 @@
 This algorithm is a theoretical modification to the preexisting JPEG algorithm for reduced file sizes. The lossless
 entropy algorithm uses bZip2 (bz2) rather than the usual run-length encoder (RLE) and huffman tree. The algorithm incorporates the use of Structural Similarity Index Measurement (SSIM) to discard redundant coefficients to the human eye.
 
-Use compress.py to compress photos.
-
-Use decompress.py to decompress photos. Save it as a decompressed PNG or JPEG.
+See SETUP section on how to get started.
 
 # Recent Additions
 
-6.10
+*6.10*
 
 You can now save the image as a compressed JPEG. The JPEG won't be as small as a bz2 file but will be smaller
 than the original JPEG. This compressor should also outperform Google's Guetzli. The compressed JPEG will allow you to
 transfer JPEG files quicker and using less bandwidth. The compressed JPEG is also compatible with all OS. Disclaimer:
 compressed JPEG file contains NO metadata. You can delete the original file at your own discretion.
 
-6.28
+*6.28*
 
 You can run compression and decompression on entire folders. Use compressfolder.py and decompressfolder.py.
 
-7.22
+*7.22*
 
 Updated to use parallel processing for improved runtimes.
 
@@ -58,7 +56,7 @@ Though it is mentioned above, it is not recommended. There is __NO__ meta data i
 Furthermore, this algorithm is theoretical, 1. there may
 be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image. You need to use the provided decompressor to decode the specific sequence of values.
 
-Like I mentioned, this is a completely novel compression algorithm.
+Like mentioned, this is a completely novel compression algorithm.
 
 # Future Works
 
