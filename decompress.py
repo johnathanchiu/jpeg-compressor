@@ -33,8 +33,8 @@ def image_attributes(compressed):
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
-    ap.add_argument('-c', "--compressed", required=True, help="compressed file name with path & extension")
-    ap.add_argument('-d', "--decompressed", default='./', help="path to file for decompressed image")
+    ap.add_argument('-c', "--compressed", required=True, help="Compressed file name with path & extension")
+    ap.add_argument('-d', "--decompressed", default='./', help="Path to file for decompressed image")
     ap.add_argument('-i', "--iden", default='y', help="Y/y for decompressed jpg")
     args = ap.parse_args()
     compressed_file, decompressed_image = args.compressed, args.decompressed

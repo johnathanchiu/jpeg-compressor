@@ -20,37 +20,41 @@ compressed JPEG file contains NO metadata. You can delete the original file at y
 
 You can run compression and decompression on entire folders. Use compressfolder.py and decompressfolder.py.
 
+7.22
+
+Updated to use parallel processing for improved runtimes.
+
 # Setup
 
 Check dependencies at bottom of README
 
-For compress.py example usage:
+__*For compress.py example usage:*__
 
 python compress.py [-i | Full image path with file and extension] [-c | Path to folder where to save compressed file/default=working directory]
  
-For decompress.py example usage:
+__*For decompress.py example usage:*__
 
 python decompress.py [-i | use letter y to save image as jpeg/default=letter n to denote that save the image as a png] [-c | Path to compressed file with extension (.bz2)] [-d | Save the image to specified folder/default=working directory]
 
-For compressfolder.py example usage:
+__*For compressfolder.py example usage:*__
 
 python compressfolder.py [-i | folder of images] [-c | where to store compressed files]
 
-For decompressfolder.py example usage:
+__*For decompressfolder.py example usage:*__
 
 python decompressfolder.py [-c | folder of compressed images] [-d | directory to store decompressed images for viewing]
 
-Use -h for full details.
+__Use -h for full details.__
 
 # Explanations
 
-All file data is saved within the bz2 file. The PNG file that is saved when decompressed is for viewing purposes (emphasized).
+All file data is saved within the bz2 file. The PNG file that is saved when decompressed is for __VIEWING PURPOSES__.
 You can delete the PNG file and original after viewing, all image data is in the bz2 file.
 When comparing file sizes, compare the bz2 file to the original image (JPEG file).
 
 # Deleting the original image is not recommended
 
-Though it is mentioned above, it is not recommended. There is no meta data in the bz2 file.
+Though it is mentioned above, it is not recommended. There is __NO__ meta data in the bz2 file.
 Furthermore, this algorithm is theoretical, 1. there may
 be bugs and 2. no OS can unwrap a bz2 file and decompress automatically into a viewable image. You need to use the provided decompressor to decode the specific sequence of values.
 
