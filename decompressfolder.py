@@ -6,8 +6,8 @@ import argparse
 import time
 import os
 
-from JPEG.utils import *
-from JPEG.binutils import convertInt, convertBin
+from jpeg.utils import *
+from jpeg.binutils import convertInt, convertBin
 from compressor.EntropyReduction import EntropyReduction
 
 

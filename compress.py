@@ -1,6 +1,6 @@
 from compressor.EntropyReduction import EntropyReduction
-from JPEG.binutils import convertInt, convertBin
-from JPEG.utils import *
+from jpeg.binutils import convertInt, convertBin
+from jpeg.utils import *
 
 from skimage.measure._structural_similarity import compare_ssim as ssim
 
