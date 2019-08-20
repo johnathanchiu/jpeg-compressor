@@ -6,8 +6,6 @@ from skimage.measure._structural_similarity import compare_ssim as ssim
 
 from tqdm import tqdm
 import argparse
-import random
-import math
 
 import imageio
 import array
@@ -17,7 +15,6 @@ import time
 import os
 
 
-SAMPLE_AREA = 256
 TABLE, QUALITY, SAMPLE_RATIO = QUANTIZATIONTABLE, 64, 1.0
 
 
@@ -25,41 +22,35 @@ def jpeg(partition):
     return capture(zig_zag(quantize(dct_2d(partition), table=TABLE)), values=QUALITY, sample_percentage=SAMPLE_RATIO)
 
 
-def SSIM(photo, photo_x, photo_y, area=200, table=QUANTIZATIONTABLE, resample=False):
-    if resample: print(); print("Resampling with new area, previous patch was bad")
-    assert photo_x >= 64 or photo_y >= 64, "Photo too small to run SSIM metric, compression diverges"
-    assert area % 8 == 0, "Invalid sampling area make sure sample area is equally divisible by 8"
-    grab_x, grab_y = int(photo_x // random.uniform(1.5, 4)), int(photo_y // random.uniform(1.5, 4))
-    original_sample = np.array(photo[grab_x:grab_x + area, grab_y:grab_y + area], dtype=np.int16)
-    pbar = tqdm(range(8, 64))
+def SSIM(patch, table=QUANTIZATIONTABLE, resample=False):
+    if resample: print(); print("Resampling with new quantization table")
+    assert patch.shape[0] % 8 == 0 and patch.shape[1] % 8 == 0, \
+        "Invalid sampling area make sure sample area is equally divisible by 8"
+    pbar = tqdm(range(2, 64), desc="Running SSIM metric quality, 2 through 64 sampled weights")
     last_metric, rep = 0, 0
     for i in pbar:
         compressed_data, partitions = array.array('b', []), []
         ext = compressed_data.extend; app = partitions.append
-        pbar.set_description("Running SSIM metric quality, 8 through 64 sampled weights")
-        list_of_patches = split((original_sample.copy() - 128).astype(np.int8), 8, 8)
+        list_of_patches = split((patch.copy() - 128).astype(np.int8), 8, 8)
         [ext(capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)) for x in list_of_patches]
         compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
         [app(idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128) for y in compressed_split]
-        index = merge_blocks(partitions, int(area/8), int(area/8)).astype(np.uint8)
-        metric = ssim(original_sample, index, data_range=index.max() - index.min())
-        if math.isnan(metric): return SSIM(photo, photo_x, photo_y, area=area, resample=True)
-        if metric < 0.7:
-            return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.1), resample=True)
-        if metric > 0.98:
+        index = merge_blocks(partitions, int(1), int(1)).astype(np.uint8)
+        metric = ssim(patch, index, data_range=index.max() - index.min())
+        if metric > 0.96:
             if table[0][0] < 8: table[0][0] = 8
             if i % 2 != 0: i += 1
             return i, metric, table
         if abs(last_metric - metric) < 0.0000000001:
-            if metric > 0.955:
+            if metric > 0.94:
                 if table[0][0] < 8: table[0][0] = 8
                 if i % 2 != 0: i += 1
                 return i - rep, metric, table
-            return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.1), resample=True)
+            return SSIM(patch, table=np.round(table/1.1), resample=True)
         rep += 1
         if rep == 4: last_metric = metric; rep = 0
-    if metric < 0.955:
-        return SSIM(photo, photo_x, photo_y, area=area, table=np.round(table/1.2), resample=True)
+    if metric < 0.92:
+        return SSIM(patch, table=np.round(table/1.2), resample=True)
     if table[0][0] < 8: table[0][0] = 8
     return 64, metric, table
 
@@ -88,9 +79,13 @@ if __name__ == '__main__':
     image = imageio.imread(image_path)
     length, width = image[:, :, 0].shape; c_l, c_w, p_l, p_w = precompression_factors(image)
     y, cb, cr = convert_sample(image, length, width)
-    values_to_keep, metric, quant = SSIM(y, p_l, p_w, area=SAMPLE_AREA, table=QUANTIZATIONTABLE)
+    test_y = matrix_multiple_of_eight(y)
+    splits = np.array([np.array(test_y[x:x + 8, z:z + 8], dtype=np.int16) for x in range(0, test_y.shape[0], 8)
+                       for z in range(0, test_y.shape[1], 8)], dtype=np.int16)
+    variances = [np.var(i) for i in splits]
+    original_sample = splits[np.argmax(variances)]
+    values_to_keep, metric, quant = SSIM(original_sample, table=QUANTIZATIONTABLE)
     print('Number of samples (out of 64) to keep at metric ' + str(metric) + ': ', values_to_keep)
-
     keep = [values_to_keep]; padding = [p_l - c_l, p_w - c_w]
     dimensions = convertBin(p_l, bits=16) + convertBin(p_w, bits=16)
     p_length = [convertInt(dimensions[:8], bits=8), convertInt(dimensions[8:16], bits=8)]

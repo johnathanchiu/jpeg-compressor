@@ -27,7 +27,8 @@ def image_attributes(compressed):
     p_length = convertInt(convertBin(compressed[129],bits=8)+convertBin(compressed[130],bits=8),bits=16)
     p_width = convertInt(convertBin(compressed[131],bits=8)+convertBin(compressed[132],bits=8),bits=16)
     length, width = p_length - compressed[133], p_width - compressed[134]
-    val, val_cr = int(p_length*p_width / 64*quality_metric), int(p_length*p_width / 64*int(quality_metric*SAMPLE_RATIO))
+    val = int(p_length*p_width / 64*int(quality_metric*SAMPLE_RATIO))
+    val_cr = int(p_length*p_width / 64*int(quality_metric*SAMPLE_RATIO))
     return table, tablecr, p_length, p_width, length, width, val, val_cr
 
 
