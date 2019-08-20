@@ -28,6 +28,7 @@ def SSIM(patch, table=QUANTIZATIONTABLE, resample=False):
         "Invalid sampling area make sure sample area is equally divisible by 8"
     pbar = tqdm(range(2, 64), desc="Running SSIM metric quality, 2 through 64 sampled weights")
     last_metric, rep = 0, 0
+    dimsx, dimsy = patch.shape[0], patch.shape[1]
     for i in pbar:
         compressed_data, partitions = array.array('b', []), []
         ext = compressed_data.extend; app = partitions.append
@@ -35,7 +36,7 @@ def SSIM(patch, table=QUANTIZATIONTABLE, resample=False):
         [ext(capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)) for x in list_of_patches]
         compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
         [app(idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128) for y in compressed_split]
-        index = merge_blocks(partitions, 2, 2).astype(np.uint8)
+        index = merge_blocks(partitions, int(dimsx//8), int(dimsy//8)).astype(np.uint8)
         metric = ssim(patch, index, data_range=index.max() - index.min())
         if metric > .98:
             if table[0][0] < 8: table[0][0] = 8
