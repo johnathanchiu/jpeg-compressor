@@ -35,21 +35,21 @@ def SSIM(patch, table=QUANTIZATIONTABLE, resample=False):
         [ext(capture(zig_zag(quantize(dct_2d(x), table=table)), values=i)) for x in list_of_patches]
         compressed_split = [compressed_data[z:z + i] for z in range(0, len(compressed_data), i)]
         [app(idct_2d(undo_quantize(zig_zag_reverse(rebuild(y)), table=table)) + 128) for y in compressed_split]
-        index = merge_blocks(partitions, int(1), int(1)).astype(np.uint8)
+        index = merge_blocks(partitions, 2, 2).astype(np.uint8)
         metric = ssim(patch, index, data_range=index.max() - index.min())
-        if metric > 0.96:
+        if metric > .98:
             if table[0][0] < 8: table[0][0] = 8
             if i % 2 != 0: i += 1
             return i, metric, table
         if abs(last_metric - metric) < 0.0000000001:
-            if metric > 0.94:
+            if metric > 0.96:
                 if table[0][0] < 8: table[0][0] = 8
                 if i % 2 != 0: i += 1
                 return i - rep, metric, table
             return SSIM(patch, table=np.round(table/1.1), resample=True)
         rep += 1
         if rep == 4: last_metric = metric; rep = 0
-    if metric < 0.92:
+    if metric < 0.94:
         return SSIM(patch, table=np.round(table/1.2), resample=True)
     if table[0][0] < 8: table[0][0] = 8
     return 64, metric, table
@@ -77,11 +77,12 @@ if __name__ == '__main__':
     image_path, compressed = args.image, args.compressed
     _, tail = os.path.split(image_path)
     image = imageio.imread(image_path)
+    start_time = time.time()
     length, width = image[:, :, 0].shape; c_l, c_w, p_l, p_w = precompression_factors(image)
     y, cb, cr = convert_sample(image, length, width)
     test_y = matrix_multiple_of_eight(y)
-    splits = np.array([np.array(test_y[x:x + 8, z:z + 8], dtype=np.int16) for x in range(0, test_y.shape[0], 8)
-                       for z in range(0, test_y.shape[1], 8)], dtype=np.int16)
+    splits = np.array([np.array(test_y[x:x + 16, z:z + 16], dtype=np.int16) for x in range(0, test_y.shape[0], 16)
+                       for z in range(0, test_y.shape[1], 16)], dtype=np.int16)
     variances = [np.var(i) for i in splits]
     original_sample = splits[np.argmax(variances)]
     values_to_keep, metric, quant = SSIM(original_sample, table=QUANTIZATIONTABLE)
@@ -98,15 +99,15 @@ if __name__ == '__main__':
     CR = tqdm(split((matrix_multiple_of_eight(cr - 128)).astype(np.int8), 8, 8),
               desc='Running modified jpeg compression 3/3')
 
-    start_time = time.time()
     QUALITY, TABLE = values_to_keep, quant
     with Pool(8) as p: compressed_y = array.array('b', np.asarray(p.map(jpeg, Y)).flatten())
     TABLE = CHROMQUANTIZATIONTABLE
+    TABLE = quant
     with Pool(8) as p:
         compressed_cb = array.array('b', np.asarray(p.map(jpeg, CB)).flatten())
         compressed_cr = array.array('b', np.asarray(p.map(jpeg, CR)).flatten())
 
-    q, qc = quant.flatten(), CHROMQUANTIZATIONTABLE.flatten()
+    q, qc = quant.flatten(), quant.flatten()
     quantization_tables = array.array('b', q) + array.array('b', qc)
     dim = array.array('b', keep) + array.array('b', p_length) + array.array('b', p_width) + array.array('b', padding)
     compressed_data = quantization_tables + dim + compressed_y + compressed_cb + compressed_cr

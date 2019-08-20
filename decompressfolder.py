@@ -38,12 +38,14 @@ if __name__ == '__main__':
                     help="folder of compressed")
     ap.add_argument("-d", "--directory", required=True,
                     help="decompressed folder")
+    ap.add_argument("-i", "--iden", default=1, type=int, help="1 for jpeg, 0 for png")
     args = ap.parse_args()
     start_time = time.time()
     pbar = tqdm(os.listdir(args.compressed), desc="running decompressor on all images in folder")
+    assert args.iden == 1 or args.iden == 0, "invalid key"
     for file in pbar:
         filename = os.fsdecode(file)
-        if args.iden == 'Y' or args.iden == 'y': resulting_file = args.directory+os.path.splitext(filename)[0] + '.jpg'
+        if args.iden == 1: resulting_file = args.directory+os.path.splitext(filename)[0] + '.jpg'
         else: image_save = resulting_file = args.directory+os.path.splitext(filename)[0] + '.png'
 
         if filename.endswith(".bz2"):
