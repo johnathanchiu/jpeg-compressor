@@ -60,8 +60,7 @@ Like mentioned, this is a completely novel compression algorithm.
 
 # Future Works
 
-Novel lossless entropy encoder which outperforms bz2 and gzip to be added as replacement of bz2 also coming soon.
-Paper to how the entire algorithm works will be linked soon!
+Using DNN to compress files smaller by outputting optimal quantization tables.
 
 # Dependencies & Purposes:
  - imageio (for opening image files and saving)
